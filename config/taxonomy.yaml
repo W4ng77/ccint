@@ -1,0 +1,190 @@
+# taxonomy.yaml — 分类法的**唯一真值源**(T1)。
+#
+# 在此之前分类法有两份真值:lexicons_v2/topics.yaml(给规则 labeler)和 llm_v1.py
+# 里的 Python tuple(给 LLM 的 guided decoding enum)。两份可以漂移,而且漂移了
+# 不会报错 —— 后果是两个 label_version 分类到不同的标签空间上,它们之间的 diff
+# 里会混进「分类法不一致」这个与模型无关的成分。
+#
+# 合并时实测到的第一个漂移:规则版是 10 个桶 + 隐含 other,LLM enum 是 11 个显式
+# 条目。两边的标签空间大小本来就不同。现在 other 显式存在,带 residual: true,
+# 规则 labeler 跳过它(terms 为空),LLM enum 包含它。
+#
+# [MUST] 顺序即优先级。多主题帖取第一个命中的桶,规则版和 LLM 版共用这条裁决规则。
+# [MUST] 改动本文件 = 改变标签空间 → 必须 bump version 并新建 label_version。
+# [MUST] `terms` 给规则 labeler(正则),`llm_description` 给 prompt 和 JSON schema。
+version: taxonomy_v3
+derived_from:
+  rules: topics_v2
+  llm: llm_v1.BUCKETS
+residual_key: other
+topics:
+- key: ransomware
+  llm_description: 'Ransomware specifically: ransom demanded, systems encrypted, double extortion, a named
+    ransomware gang, a leak site, or an organisation paralysed/locked out by an attack of this kind.'
+  terms:
+  - ransomware
+  - ran[çc]ongiciel
+  - ransom demand
+  - double extortion
+  - ryuk|lockbit|conti|revil|blackcat|alphv|cl0p|clop|blackbasta|black basta|akira|royal ransomware|hive
+    ransomware|medusa ransomware|play ransomware|rhysida|qilin
+  - encrypted (?:their|our|the) (?:files|systems|servers|network)
+  - leak site
+- key: phishing_scam
+  llm_description: Phishing, spear-phishing, smishing, vishing, business email compromise, fake login
+    pages or fraudulent messages designed to steal credentials.
+  terms:
+  - phish(?:ing|ed|er|es)?
+  - hame[çc]onnage
+  - smishing
+  - vishing
+  - spear[- ]phish
+  - business email compromise
+  - \bBEC\b
+  - scam (?:email|text|call|message|sms)
+  - fake (?:email|website|login|invoice)
+  - impersonat(?:ing|ion|ed) (?:the )?(?:CRA|bank|government|Canada Post)
+- key: vulnerability_cve
+  llm_description: A specific software vulnerability, CVE identifier, zero-day, exploit, unpatched flaw,
+    or patching guidance about one.
+  terms:
+  - CVE-\d{4}-\d{4,7}
+  - zero[- ]day
+  - \b0day\b
+  - vuln(?:erabilit(?:y|ies))?
+  - vuln[ée]rabilit[ée]s?
+  - proof[- ]of[- ]concept exploit
+  - unpatched
+  - patch (?:tuesday|now|immediately)
+  - remote code execution
+  - \bRCE\b
+  - privilege escalation
+  - faille de s[ée]curit[ée]
+- key: data_breach
+  llm_description: Data was exposed, accessed, leaked or stolen. THIS INCLUDES ordinary news wording that
+    never uses the phrase 'data breach' — for example 'court records were accessed', 'the case management
+    system was hacked', 'personal information may have been compromised', 'X million licences leaked',
+    'customer files exposed'. If the substance is that data got out, this is the bucket.
+  terms:
+  - data breach(?:es)?
+  - fuite de donn[ée]es
+  - violation de donn[ée]es
+  - breach(?:ed)? (?:data|records|database|customers?)
+  - data leak(?:ed|s)?
+  - records (?:exposed|leaked|stolen)
+  - exposed (?:database|records|customer data)
+  - personal information (?:was |were )?(?:exposed|compromised|stolen)
+  - renseignements personnels compromis
+  - '(?:new |another )?breach:'
+  - breach of (?:their|our|the|his|her) (?:personal )?(?:data|information|records)
+  - (?:data|information|records|list) (?:was |were |allegedly )?(?:illegally |improperly )?(?:procured|obtained|harvested)
+- key: gov_advisory
+  llm_description: A government or national cyber agency issuing an advisory, alert, bulletin or guidance
+    — Cyber Centre, CISA, Five Eyes joint guidance, RCMP warnings.
+  terms:
+  - cyber centre
+  - centre canadien pour la cybers[ée]curit[ée]
+  - security advisory
+  - avis de s[ée]curit[ée]
+  - (?:issued|published|released) (?:an? )?(?:advisory|alert|bulletin)
+  - CISA (?:alert|advisory|adds)
+  - joint advisory
+  - government (?:warns|warning|advisory)
+  - recommande de mettre [àa] jour
+  - (?:information and )?privacy commissioner
+  - privacy watchdog
+  - commissaire [àa] la (?:protection de la )?vie priv[ée]e
+- key: critical_infrastructure
+  llm_description: Attacks on or risks to power, water, healthcare, transport, pipelines, industrial control
+    systems or other essential services.
+  terms:
+  - critical infrastructure
+  - infrastructures? essentielles?
+  - power grid|electrical grid|r[ée]seau [ée]lectrique
+  - water (?:utility|treatment|system)
+  - \bSCADA\b|\bICS\b|operational technology|\bOT\b security
+  - hospital (?:network|system)s? (?:hit|hacked|breached|down)
+  - h[ôo]pital (?:pirat[ée]|cyberattaqu[ée])
+  - pipeline (?:hack|attack|shut)
+  - airport|rail(?:way)? (?:system )?(?:hack|cyber)
+- key: fraud_financial
+  llm_description: Fraud, identity theft, scams causing financial loss, unauthorised transactions, crypto
+    theft.
+  terms:
+  - fraud(?:ulent)?
+  - fraude
+  - identity theft
+  - vol d[e']identit[ée]
+  - wire transfer scam
+  - crypto (?:scam|theft|drainer)
+  - money mule
+  - stolen (?:credit card|banking) (?:details|credentials)
+  - unauthorized (?:transactions?|charges?)
+  - refund scam
+  - dark ?web
+  - identity (?:theft|document) (?:service|marketplace|ring)
+  - (?:licen[cs]es|documents|records|credentials|scans) (?:for sale|up for sale)
+  - cyber ?crime (?:forum|marketplace|service)
+- key: malware_infostealer
+  llm_description: Malware, infostealers, trojans, spyware, botnets — the software itself rather than
+    a breach outcome.
+  terms:
+  - infostealer
+  - info[- ]stealer
+  - redline|raccoon stealer|vidar|lumma|stealc
+  - malware
+  - logiciels? malveillants?
+  - maliciels?
+  - trojan|cheval de troie
+  - spyware|logiciel espion
+  - botnet
+  - backdoor|porte d[ée]rob[ée]e
+  - keylogger
+  - rootkit
+- key: ddos_outage
+  llm_description: Denial of service, sites taken offline, service outages and disruptions caused by attack.
+  terms:
+  - \bDDoS\b
+  - denial[- ]of[- ]service
+  - d[ée]ni de service
+  - (?:website|service|site)s? (?:is |are |was |were )?(?:down|offline|unavailable)
+  - outage
+  - panne
+  - service disruption
+  - taken offline by
+- key: policy_regulation
+  llm_description: 'A specific law, bill, regulation or regulator: PIPEDA, Bill C-xx, Law 25, a privacy
+    commissioner, a statutory compliance deadline, an age-verification mandate, a fine issued under a
+    statute. NOT this bucket: international alliances and trade relationships; defence procurement or
+    industry certifications; government funding and investment announcements; ''digital sovereignty''
+    as a political theme; an organisation''s own internal policy such as a bank''s password rules; or
+    general commentary that something *ought* to be regulated. Those are `other`. Ask: is the post about
+    a named legal instrument or regulator?'
+  terms:
+  - \bPIPEDA\b
+  - \bBill C-\d+
+  - projet de loi C-\d+
+  - privacy law|loi sur la (?:protection de la )?vie priv[ée]e
+  - \bLoi 25\b|Law 25
+  - regulator|r[ée]gulateur
+  - compliance (?:requirement|deadline|rule)
+  - legislation|l[ée]gislation
+  - data (?:protection|sovereignty|residency) (?:law|rule|requirement)
+  - fined? (?:\$|CAD|million) .{0,30}(?:privacy|breach)
+  - \bGRC\b
+  - governance,? risk,? and compliance
+  - compliance (?:framework|program|posture)
+  - class[- ]action .{0,40}(?:breach|privacy|data)
+- key: other
+  llm_description: None of the above fits. Use this only after genuinely considering every bucket above
+    — it is the residual, not a default.
+  terms: []
+  residual: true
+low_information:
+  min_effective_tokens: 4
+  reaction_only_patterns:
+  - ^(?:wow|omg|lol|lmao|yikes|oof|rip|damn|jesus|christ|wtf|ugh|oh\s*no|no\s*way|welp|sheesh|bruh|yep|yup|nope|same|mood|f+u+c+k+)[\s,.!?]*$
+  - ^(?:wow|omg|lol|lmao|yikes|oof|damn|jesus|christ|wtf|ugh|oh\s*no|no\s*way|welp|sheesh|bruh)?[\s,.!?]*(?:this|that|it|these|those)\s*(?:is|was|are|were|s)?[\s,.!?]*(?:so|just|really|absolutely|truly)?[\s,.!?]*(?:insane|crazy|wild|nuts|bad|awful|terrible|scary|rough|brutal|wack|nuts|unreal|messed\s*up|not\s*good)[\s.!?]*$
+  - ^(?:rt|repost(?:ing)?|boost(?:ing)?|signal\s*boost|sharing|reposted|\u267b+)[\s:.!]*$
+  - ^(?:same|this\s*\u261d?|\u261d|exactly|agreed?|\+1|facts?|true|yeah|yes|no)[\s.!?]*$
+  - ^[\W_\s]*$

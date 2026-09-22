@@ -43,6 +43,7 @@ from dataclasses import dataclass
 
 import httpx
 
+from .. import taxonomy
 from ..models import Label
 
 log = logging.getLogger(__name__)
@@ -51,54 +52,9 @@ LABEL_VERSION = "llm_v1"
 
 # [MUST] 顺序与 lexicons_v2/topics.yaml 完全一致。多主题帖按此顺序取第一个 ——
 # 与规则版同一套裁决规则，否则两个 version 的差异里会混进排序口径的差异。
-BUCKETS: list[tuple[str, str]] = [
-    ("ransomware",
-     "Ransomware specifically: ransom demanded, systems encrypted, double "
-     "extortion, a named ransomware gang, a leak site, or an organisation "
-     "paralysed/locked out by an attack of this kind."),
-    ("phishing_scam",
-     "Phishing, spear-phishing, smishing, vishing, business email compromise, "
-     "fake login pages or fraudulent messages designed to steal credentials."),
-    ("vulnerability_cve",
-     "A specific software vulnerability, CVE identifier, zero-day, exploit, "
-     "unpatched flaw, or patching guidance about one."),
-    ("data_breach",
-     "Data was exposed, accessed, leaked or stolen. THIS INCLUDES ordinary "
-     "news wording that never uses the phrase 'data breach' — for example "
-     "'court records were accessed', 'the case management system was hacked', "
-     "'personal information may have been compromised', 'X million licences "
-     "leaked', 'customer files exposed'. If the substance is that data got "
-     "out, this is the bucket."),
-    ("gov_advisory",
-     "A government or national cyber agency issuing an advisory, alert, "
-     "bulletin or guidance — Cyber Centre, CISA, Five Eyes joint guidance, "
-     "RCMP warnings."),
-    ("critical_infrastructure",
-     "Attacks on or risks to power, water, healthcare, transport, pipelines, "
-     "industrial control systems or other essential services."),
-    ("fraud_financial",
-     "Fraud, identity theft, scams causing financial loss, unauthorised "
-     "transactions, crypto theft."),
-    ("malware_infostealer",
-     "Malware, infostealers, trojans, spyware, botnets — the software itself "
-     "rather than a breach outcome."),
-    ("ddos_outage",
-     "Denial of service, sites taken offline, service outages and disruptions "
-     "caused by attack."),
-    ("policy_regulation",
-     "A specific law, bill, regulation or regulator: PIPEDA, Bill C-xx, "
-     "Law 25, a privacy commissioner, a statutory compliance deadline, an "
-     "age-verification mandate, a fine issued under a statute. "
-     "NOT this bucket: international alliances and trade relationships; "
-     "defence procurement or industry certifications; government funding and "
-     "investment announcements; 'digital sovereignty' as a political theme; "
-     "an organisation's own internal policy such as a bank's password rules; "
-     "or general commentary that something *ought* to be regulated. Those are "
-     "`other`. Ask: is the post about a named legal instrument or regulator?"),
-    ("other",
-     "None of the above fits. Use this only after genuinely considering every "
-     "bucket above — it is the residual, not a default."),
-]
+# [T1] 不再在这里维护第二份列表 —— 见 config/taxonomy.yaml 的文件头。
+# 合并时发现的漂移:规则版 10 个桶 + 隐含 other,这里曾是 11 个显式条目。
+BUCKETS: list[tuple[str, str]] = taxonomy.descriptions()
 BUCKET_KEYS = [k for k, _ in BUCKETS]
 
 # [MUST] 字段顺序：枚举/布尔在前，自由文本 rationale 殿后。

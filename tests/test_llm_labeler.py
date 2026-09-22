@@ -17,18 +17,16 @@ from ccint.labelers.llm_v1 import (BUCKET_KEYS, OUTPUT_SCHEMA, SYSTEM_PROMPT,
 
 
 # ------------------------------------------------------------------ 分类体系
-def test_bucket_order_matches_rules_taxonomy():
-    """[MUST] 顺序必须与 lexicons_v2/topics.yaml 一致。
+def test_bucket_order_comes_from_taxonomy():
+    """[MUST] 顺序必须与分类法真值源一致。
 
-    两个 version 若用不同的优先级裁决多主题帖，它们的差异里就混进了
-    排序口径的差异，归因立刻失效。
+    两个 version 若用不同的优先级裁决多主题帖,它们的差异里就混进了排序口径的
+    差异,归因立刻失效。T1 之前这里断言的是「两份列表彼此相等」;现在只有一份
+    列表,断言变成「消费者没有自带副本」。
     """
-    import pathlib
-
-    import yaml
-    d = yaml.safe_load((pathlib.Path("src/ccint/labelers/lexicons_v2/topics.yaml")
-                        ).read_text(encoding="utf-8"))
-    assert [b["key"] for b in d["buckets"]] + ["other"] == BUCKET_KEYS
+    from ccint import taxonomy
+    assert BUCKET_KEYS == taxonomy.keys()
+    assert BUCKET_KEYS[-1] == taxonomy.residual()
 
 
 def test_schema_puts_free_text_last():

@@ -15,6 +15,7 @@ from pathlib import Path
 
 import yaml
 
+from .. import taxonomy
 from ..models import Label
 
 log = logging.getLogger(__name__)
@@ -87,7 +88,16 @@ def _compile(term: str, *, case_sensitive: bool = False) -> re.Pattern:
 def _lexicons(lexicon_dir: Path | None = None) -> dict:
     cyber = _load("cyber.yaml", lexicon_dir)
     canada = _load("canada.yaml", lexicon_dir)
-    topics = _load("topics.yaml", lexicon_dir)
+    # [T1] rules_v2 起 topic 从 config/taxonomy.yaml 读 —— 那里是分类法的唯一真值源,
+    # 与 LLM labeler 的 guided decoding enum 同源。rules_v1 继续读自己目录下的历史
+    # 词表:重算 rules_v1 必须逐行复现库里已有的标签(P2),不能被后来的分类法改动污染。
+    d = lexicon_dir or LEXICON_DIRS[LABEL_VERSION]
+    if d.name == "lexicons_v2":
+        topics = {"version": taxonomy.version(),
+                  "buckets": taxonomy.substantive(),
+                  "low_information": taxonomy.low_information()}
+    else:
+        topics = _load("topics.yaml", lexicon_dir)
 
     cyber_pats = [
         (lang, t, _compile(t))
