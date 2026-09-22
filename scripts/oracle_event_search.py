@@ -6,15 +6,15 @@
 两者对系统的含义完全相反 —— (a) 是平台的性质,改进采集无用;(b) 是采集边界的
 缺陷,是可修的。
 
-做法:对登记表里每个加拿大事件,用**受害组织名本身**(不带任何安全词)在
-Bluesky 定向搜一次,窗口为事件公布日 [-2, +30] 天。这条查询不是生产采集流的
-一部分,只用于测量 —— 它是一次 oracle,回答「如果我们早知道要找什么,能找到
-多少」。
+做法:对登记表里每个加拿大事件,用**受害组织名本身**(不带任何安全词)定向搜,
+窗口为事件公布日 [-2, +30] 天。
 
-[MUST] 写 collection_runs(P5)。任何触达采集 API 的路径都要留痕,否则日后
-无法区分「那天量少」是社会现象还是我们在跑别的东西。
-[MUST] 不入库 posts。把 oracle 的结果灌进语料会改变语料定义,而这份语料正在
-被用来评估采集边界本身。
+[MUST] 光按组织名搜会被同名噪声淹没 —— 实测 "MEQ" 搜出的是医学单位 mEq,
+"Air Canada" 搜出的是机票优惠和航班动态。所以每条命中必须再过一次 cyber 判定
+才计入。不加这一步,「平台上存在讨论」这个数会被虚报数倍。
+
+[MUST] 写 collection_runs(P5);不入库 posts —— 把 oracle 结果灌进语料会改变
+语料定义,而这份语料正在被用来评估采集边界本身。
 """
 from __future__ import annotations
 
@@ -23,78 +23,83 @@ import json
 import logging
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor
+
+import httpx
 
 from ccint import db
-from ccint.config import Settings
 from ccint.collectors.bluesky import BlueskyCollector
+from ccint.labelers.llm_v2 import CYBER_SCHEMA
+from ccint.llm import client as llm
 
 logging.basicConfig(level=logging.WARNING, format="%(message)s")
 WIN_BEFORE, WIN_AFTER = 2, 30
+BASE_URL, MODEL = "http://127.0.0.1:8000/v1", "user"
 
 
 def main() -> int:
     with db.connect(autocommit=True) as c:
         events = [dict(r) for r in c.execute("""
-            SELECT v.event_id, v.title, v.published_at_utc,
-                   array_agg(e.entity_text) AS ents
-            FROM external_events v
-            JOIN external_event_entities e USING (event_id)
-            WHERE v.country='CA' AND v.published_at_utc >= '2026-08-22'
-              AND v.published_at_utc < '2026-09-23'
-            GROUP BY 1,2,3 ORDER BY 3""")]
+            SELECT event_id, title, published_at_utc FROM external_events
+            WHERE country='CA' AND published_at_utc >= '2026-08-22'
+              AND published_at_utc < '2026-09-23' ORDER BY published_at_utc""")]
+        have = {r["sid"] for r in c.execute("SELECT source_post_id sid FROM posts")}
     print(f"加拿大事件 {len(events)} 起", flush=True)
 
     col = BlueskyCollector([" "], query_version="oracle_v1")
     t0 = dt.datetime.now(dt.timezone.utc)
-    out, n_calls = [], 0
+    out = []
     try:
         for i, ev in enumerate(events, 1):
-            name = ev["title"]
             since = ev["published_at_utc"] - dt.timedelta(days=WIN_BEFORE)
             until = ev["published_at_utc"] + dt.timedelta(days=WIN_AFTER)
             try:
-                page = col.fetch_page(since=since, until=until, cursor=None,
-                                      limit=100, term=f'"{name}"')
-                n_calls += 1
-                hits = page.posts
+                pg = col.fetch_page(since=since, until=until, cursor=None,
+                                    limit=100, term=f'"{ev["title"]}"')
+                hits = [{"uri": p.source_post_id, "handle": p.author_handle,
+                         "text": p.text, "likes": p.like_count or 0,
+                         "in_corpus": p.source_post_id in have} for p in pg.posts]
             except Exception as e:                                # noqa: BLE001
-                print(f"  !! {name[:40]}: {type(e).__name__}", flush=True)
+                print(f"  !! {ev['title'][:40]}: {type(e).__name__}", flush=True)
                 hits = None
-            out.append({
-                "event_id": ev["event_id"], "title": name,
-                "published": ev["published_at_utc"].isoformat(),
-                "oracle_hits": None if hits is None else len(hits),
-                "handles": None if hits is None
-                           else sorted({p.author_handle for p in hits})[:10],
-            })
+            out.append({"event_id": ev["event_id"], "title": ev["title"],
+                        "published": ev["published_at_utc"].isoformat(),
+                        "hits": hits})
             if i % 10 == 0:
-                print(f"  {i}/{len(events)}", flush=True)
+                print(f"  搜索 {i}/{len(events)}", flush=True)
             time.sleep(0.4)
     finally:
         col.close()
+
+    # ---- 每条命中再过一次 cyber 判定,滤掉同名噪声 ----
+    p_cy = llm.load_prompt("gate/is_cyber", 1)
+    flat = [(o, h) for o in out if o["hits"] for h in o["hits"]]
+    print(f"\n对 {len(flat)} 条命中做 cyber 判定(滤同名噪声)…", flush=True)
+    lim = httpx.Limits(max_connections=36, max_keepalive_connections=36)
+    with httpx.Client(limits=lim) as http, ThreadPoolExecutor(32) as pool:
+        def f(x):
+            return x, llm.call(http, base_url=BASE_URL, model=MODEL, prompt=p_cy,
+                               user_text=x[1]["text"] or "", schema=CYBER_SCHEMA,
+                               max_tokens=96)
+        for (o, h), r in pool.map(f, flat):
+            h["is_cyber"] = None if r.data is None else bool(r.data.get("is_cyber"))
 
     with db.connect(autocommit=True) as c:
         c.execute("""INSERT INTO collection_runs
             (source_key, mode, query_version, query_spec, window_start, window_end,
              started_at, ended_at, status, n_fetched, n_inserted, n_duplicate, n_error)
-            VALUES ('bluesky','oracle','oracle_v1',%s,%s,%s,%s,now(),'success',
-                    %s,0,0,%s)""",
-            (json.dumps({"kind": "per-event victim-name search",
+            VALUES ('bluesky','oracle','oracle_v1',%s,%s,%s,%s,now(),'success',%s,0,0,%s)""",
+            (json.dumps({"kind": "per-event victim-name search + cyber filter",
                          "n_events": len(events),
                          "window_days": [-WIN_BEFORE, WIN_AFTER]}),
              events[0]["published_at_utc"], events[-1]["published_at_utc"], t0,
-             sum(o["oracle_hits"] or 0 for o in out),
-             sum(1 for o in out if o["oracle_hits"] is None)))
+             len(flat), sum(1 for o in out if o["hits"] is None)))
 
-    path = "reports/oracle_events.json"
-    with open(path, "w", encoding="utf-8") as fh:
+    with open("reports/oracle_events.json", "w", encoding="utf-8") as fh:
         json.dump(out, fh, ensure_ascii=False, indent=1)
-    ok = [o for o in out if o["oracle_hits"] is not None]
-    withpost = [o for o in ok if o["oracle_hits"] > 0]
-    print(f"\noracle 搜索成功 {len(ok)}/{len(out)},API 调用 {n_calls}")
-    print(f"平台上**存在**讨论的事件: {len(withpost)}/{len(ok)} = "
-          f"{len(withpost)/max(1,len(ok)):.1%}")
-    print(f"→ {path}")
+    cy = sum(1 for _, h in flat if h.get("is_cyber"))
+    print(f"\n命中 {len(flat)} 条,其中 cyber {cy} 条 ({cy/max(1,len(flat)):.1%})")
+    print("→ reports/oracle_events.json")
     return 0
 
 
