@@ -1,0 +1,172 @@
+# canada.yaml — is_canada 判定。召回优先（HANDOFF §M4）。
+#
+# [MUST] 必须含法语条目：英法双语语料是本项目后续研究价值之一。
+# [MUST] 词表改动 = bump label_version，旧 version 保留以便并排比较。
+#
+# 实测背景：法语专业术语在 Bluesky 上极稀薄（rançongiciel 七天仅 1 条），
+# 故法语侧主要靠地名与机构名承载，而非译名术语。
+#
+# 所有 terms 都是正则片段，一律加引号（以 [ 开头的正则会被 YAML 误解析为 flow sequence）。
+version: canada_v2
+
+# negative_guards：geo/org 命中后复查，命中 guard 则该条命中作废。
+# 压掉 HANDOFF §M4 点名的误判陷阱。
+negative_guards:
+  - pattern: "canada goose"
+    reason: "服装品牌，非加拿大政府/地理指涉"
+  - pattern: "canada dry"
+    reason: "饮料品牌"
+  - pattern: "air canada cent(?:re|er)"
+    reason: "旧场馆名，通常为体育语境"
+  # [v2 修复] GTA = Grand Theft Auto。实测 rules_v1 的 relevant 语料中有 153/846
+  # (18.1%) 仅靠 "GTA" 命中 Canada，全部是游戏新闻；malware_infostealer 桶
+  # 110 条里 92 条(84%)是「GTA 6 假 ISO 带病毒」。单个词条污染了近两成语料。
+  - pattern: "grand theft auto"
+    reason: "游戏名，非 Greater Toronto Area"
+  - pattern: "gta\\s*(?:6|vi|v|5|iv|4|online|san andreas)\\b"
+    reason: "GTA 系列游戏，非 Greater Toronto Area"
+  - pattern: "cyber resilience act"
+    reason: "CRA = 欧盟法规，非 Canada Revenue Agency"
+  - pattern: "governance,? risk,? and compliance"
+    reason: "GRC = 治理/风险/合规，非 Gendarmerie royale du Canada"
+  - pattern: "csis\\.org"
+    reason: "美国 CSIS 智库域名，非加拿大安全情报局"
+
+groups:
+  geo:
+    weight: 1.0
+    terms:
+      - "canada"
+      - "canadian"
+      - "canadien(?:ne)?s?"
+      - "ottawa"
+      - "toronto"
+      - "vancouver"
+      - "montr[ée]al"
+      - "qu[ée]bec"
+      - "qu[ée]b[ée]cois(?:e)?"
+      - "alberta"
+      - "ontario"
+      - "manitoba"
+      - "saskatchewan"
+      - "nova scotia"
+      - "nouvelle-[ée]cosse"
+      - "new brunswick"
+      - "nouveau-brunswick"
+      - "newfoundland"
+      - "terre-neuve"
+      - "prince edward island"
+      - "[îi]le-du-prince-[ée]douard"
+      - "british columbia"
+      - "colombie-britannique"
+      - "yukon"
+      - "nunavut"
+      - "northwest territories"
+      - "calgary"
+      - "edmonton"
+      - "winnipeg"
+      - "halifax"
+      - "mississauga"
+      - "gatineau"
+      - "saskatoon"
+      # [v2] 裸 "GTA" 已移除：歧义太大（Grand Theft Auto）。
+      # 真正谈 Greater Toronto Area 的帖子几乎必然同时提到 Toronto/Ontario/Canada，
+      # 故移除的召回代价接近零，换来的是消除 18% 的假阳性。
+      - "greater toronto area"
+
+  org_gov:
+    weight: 1.2
+    terms:
+      - "canada revenue agency"
+      - "agence du revenu du canada"
+      - "royal canadian mounted police"
+      - "gendarmerie royale du canada"
+      - "communications security establishment"
+      - "centre de la s[ée]curit[ée] des t[ée]l[ée]communications"
+      - "canadian centre for cyber security"
+      - "centre canadien pour la cybers[ée]curit[ée]"
+      - "service canada"
+      - "shared services canada"
+      - "services partag[ée]s canada"
+      - "public safety canada"
+      - "s[ée]curit[ée] publique canada"
+      - "health canada"
+      - "sant[ée] canada"
+      - "elections canada"
+      - "[ée]lections canada"
+      - "statistics canada"
+      - "statistique canada"
+      - "global affairs canada"
+      - "affaires mondiales canada"
+      - "privacy commissioner of canada"
+      - "commissariat [àa] la protection de la vie priv[ée]e"
+      - "CRTC"
+      - "OSFI"
+      - "BSIF"
+
+  # 缩写单列：召回高但歧义大。requires_cyber_context 要求同帖必须另有 cyber 命中，
+  # 压掉 "CRA" = Credit Rating Agency / Clinical Research Associate 一类误判。
+  # [v2] 缩写拆成两组。
+  # 实测：rules_v1 的 relevant 中 15.4% 仅靠缩写认定 Canada，抽样几乎全是假阳性
+  # —— CRA = EU Cyber Resilience Act，GRC = Governance/Risk/Compliance，
+  # CSIS = 美国智库，CST = 时区。这些歧义含义**本身就是网安术语**，
+  # 所以 requires_cyber_context 挡不住它们，必须要求加拿大侧另有佐证。
+  org_abbrev_strong:
+    weight: 1.0
+    requires_cyber_context: true
+    case_sensitive: true
+    terms:
+      - "RCMP"          # 歧义低；实测样本为真阳性
+
+  org_abbrev_weak:
+    weight: 0.5
+    requires_cyber_context: true
+    requires_corroboration: true    # 必须另有加拿大信号
+    case_sensitive: true
+    terms:
+      - "CRA"           # ⚠ EU Cyber Resilience Act
+      - "ARC"           # ⚠ 通用缩写
+      - "GRC"           # ⚠ Governance, Risk and Compliance
+      - "CSE"           # ⚠ 多义
+      - "CST"           # ⚠ Central Standard Time
+      - "CCCS"
+      - "CSIS"        # ⚠ 美国 Center for Strategic and Intl Studies (csis.org)
+      - "SCRS"
+
+  entities:
+    weight: 1.0
+    terms:
+      - "royal bank of canada"
+      - "RBC"
+      - "scotiabank"
+      - "banque scotia"
+      - "TD Bank"
+      - "Banque TD"
+      - "bank of montreal"
+      - "banque de montr[ée]al"
+      - "CIBC"
+      - "desjardins"
+      - "national bank of canada"
+      - "banque nationale du canada"
+      - "rogers communications"
+      - "TELUS"
+      - "bell canada"
+      - "shaw communications"
+      - "vid[ée]otron"
+      - "loblaw"
+      - "canadian tire"
+      - "sobeys"
+      - "couche-tard"
+      - "air canada"
+      - "via rail"
+      - "hydro[- ]qu[ée]bec"
+      - "canada post"
+      - "postes canada"
+
+  domains:
+    weight: 1.5
+    terms:
+      - "[a-z0-9-]+\\.gc\\.ca(?![a-z])"
+      - "canada\\.ca"
+      # [决策记录] 裸 .ca 域名不列入。实测它在粗筛中是主要误报源
+      # （非加拿大站点大量使用 .ca），召回收益不抵精度损失。

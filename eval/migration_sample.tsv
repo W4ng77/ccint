@@ -1,0 +1,73 @@
+# rules_v2 → llm_v1 分歧样本（v1 Phase 5 第二轮验证）
+# 第一个样本 eval/other_sample.tsv 只覆盖 other 桶，对「已分类帖子被改判」毫无证据。
+# 本文件补上这一块：从 108 条非 other 来源的分歧中，按
+# md5(post_id || 'ccint-migr-2026') 排序取 60 条。
+#
+# verdict：哪一版更接近正确
+#   LLM     llm_v1 对
+#   RULES   rules_v2 对
+#   TIE     都说得通（多为新闻摘要，同一条里有多个主题）
+#   NEITHER 两个都不对
+#
+# 编码者：Claude（第一遍；非领域专家，可覆盖）。日期 2026-09-21。
+post_id	from	to	verdict	note
+66593	fraud_financial	data_breach	LLM	1.53 亿驾照泄露；identity theft 是卖家身份不是主题
+39358	fraud_financial	data_breach	LLM	同上
+104779	ransomware	data_breach	RULES	CCQ 是勒索攻击；帖子主题其实是泄露通知法，两版都不理想
+44151	fraud_financial	data_breach	LLM	1.53 亿驾照
+51282	fraud_financial	data_breach	LLM	1.53 亿驾照
+46185	critical_infrastructure	other	LLM	BSides 议程标题含 critical infrastructure
+18133	malware_infostealer	other	LLM	RustConf 演讲预告
+51638	fraud_financial	data_breach	LLM	Nexus / IDScan.net 泄露
+39785	vulnerability_cve	data_breach	NEITHER	年龄验证的推测性评论，既非漏洞也非泄露
+56690	fraud_financial	data_breach	LLM	1.53 亿驾照
+37610	fraud_financial	data_breach	LLM	1.53 亿驾照
+44134	fraud_financial	data_breach	LLM	1.53 亿驾照
+97871	fraud_financial	data_breach	LLM	1.53 亿驾照
+43715	fraud_financial	data_breach	LLM	1.53 亿驾照
+45121	ransomware	fraud_financial	LLM	洗钱网络是主题，勒索团伙只是客户之一
+45050	ransomware	fraud_financial	LLM	同上
+37004	fraud_financial	data_breach	LLM	1.53 亿驾照（Krebs）
+51231	fraud_financial	data_breach	LLM	1.53 亿驾照
+49702	fraud_financial	data_breach	LLM	1.53 亿驾照
+74757	vulnerability_cve	other	LLM	伊朗地缘政治，规则误匹配
+48266	fraud_financial	data_breach	LLM	1.53 亿驾照
+97823	fraud_financial	data_breach	LLM	RCMP 回应驾照泄露
+45668	fraud_financial	data_breach	LLM	1.53 亿驾照
+43772	malware_infostealer	other	LLM	政治吐槽里的 spyware
+53064	fraud_financial	data_breach	LLM	1.53 亿驾照
+43802	malware_infostealer	other	LLM	BlackBerry 观点贴
+37235	fraud_financial	data_breach	LLM	1.53 亿驾照
+18144	malware_infostealer	other	LLM	RustConf 演讲预告
+89547	fraud_financial	data_breach	LLM	身份数据在暗网出售
+53790	fraud_financial	data_breach	LLM	1.53 亿驾照
+19304	fraud_financial	other	LLM	贸易政治吐槽
+64022	vulnerability_cve	other	LLM	招聘启事标题含 Vulnerability Management
+86824	malware_infostealer	other	LLM	新闻聚合流
+49000	fraud_financial	data_breach	LLM	1.53 亿驾照（法语）
+64053	policy_regulation	other	LLM	招聘启事标题含 Governance Risk And Compliance
+88026	fraud_financial	data_breach	LLM	RCMP 监测驾照泄露
+41257	gov_advisory	data_breach	TIE	新闻摘要：既有 Thomson Reuters 泄露也有 CISA KEV
+53775	fraud_financial	data_breach	LLM	1.53 亿驾照
+53768	fraud_financial	data_breach	LLM	1.53 亿驾照
+85757	fraud_financial	data_breach	LLM	1.53 亿驾照
+53501	fraud_financial	data_breach	LLM	1.53 亿驾照
+89487	fraud_financial	data_breach	LLM	RCMP 回应
+55037	fraud_financial	data_breach	LLM	1.53 亿驾照
+51275	fraud_financial	data_breach	LLM	1.53 亿驾照
+39764	fraud_financial	data_breach	LLM	1.53 亿驾照
+52501	fraud_financial	data_breach	LLM	IDScan.net 泄露
+11308	vulnerability_cve	data_breach	LLM	Golf Canada 泄露；CVE 只出现在链接里
+60503	fraud_financial	data_breach	LLM	1.53 亿驾照（NYT）
+101597	fraud_financial	data_breach	LLM	1.53 亿驾照
+53769	fraud_financial	data_breach	LLM	1.53 亿驾照
+35531	malware_infostealer	other	LLM	新闻聚合流
+27172	policy_regulation	other	RULES	「缺乏可执行的 AI 立法」确属监管议题
+66588	fraud_financial	data_breach	LLM	1.53 亿驾照
+45749	fraud_financial	data_breach	LLM	1.53 亿驾照
+39780	fraud_financial	data_breach	LLM	1.53 亿驾照
+78143	fraud_financial	other	LLM	AI 生成的记者，非金融欺诈
+41300	fraud_financial	data_breach	LLM	1.53 亿驾照
+51335	critical_infrastructure	phishing_scam	LLM	机场的 X 账号被盗发币广告，非基础设施攻击
+37109	data_breach	other	TIE	新闻摘要，多主题并列
+41124	phishing_scam	data_breach	LLM	Nexus 出售身份数据库

@@ -1,0 +1,101 @@
+# cyber.yaml — 采集边界 + is_cyber 判定，共用同一份词表（HANDOFF §M4 [MUST]）。
+#
+# search_terms 是发给 Bluesky 的查询词（每个 term 一次 search，结果合并去重）。
+# match_terms 是 is_cyber 判定用的正则片段（含 search_terms 无法覆盖的变体）。
+#
+# [MUST] 改动此文件 = 改变采集边界 → 必须递增 version 并同步 config.query_version，
+# 否则后续 trend 无法区分「社会变化」与「搜索条件变化」。
+version: cyber_v1
+
+search_terms:
+  en:
+    - ransomware
+    - phishing
+    - data breach
+    - cyberattack
+    - cybersecurity
+    - cyber attack
+    - malware
+    - infostealer
+    - zero-day
+    - ddos
+    - hacked
+    - data leak
+    - credential stuffing
+    - spyware
+    - botnet
+    - vulnerability exploit
+    - security breach
+    - identity theft
+    - CVE
+    - threat actor
+    - incident response
+    - cyber incident
+    - password breach
+    - account takeover
+    - supply chain attack
+  fr:
+    - cybersécurité
+    - rançongiciel
+    - hameçonnage
+    - fuite de données
+    - cyberattaque
+    - logiciel malveillant
+    - violation de données
+    - vol d'identité
+    - maliciel
+
+# is_cyber 判定词（正则，大小写不敏感，\b 词边界由 labeler 添加）
+match_terms:
+  en:
+    - ransomware
+    - ransom note
+    - phish(?:ing|ed|er)?
+    - data breach(?:es)?
+    - breach(?:ed)? (?:data|records|systems?)
+    - cyber ?attacks?
+    - cyber ?securit(?:y|ies)
+    - cyber ?incidents?
+    - malware
+    - infostealers?
+    - zero[- ]days?
+    - ddos
+    - denial[- ]of[- ]service
+    - hack(?:ed|ers?|ing)
+    - data leaks?
+    - leaked (?:data|records|credentials)
+    - credential stuffing
+    - spyware
+    - botnets?
+    - exploit(?:ed|ing|s)?
+    - vulnerabilit(?:y|ies)
+    - CVE-\d{4}-\d{4,7}
+    - threat actors?
+    - identity theft
+    - account takeovers?
+    - supply[- ]chain attacks?
+    - security (?:breach|advisory|bulletin|flaw|incident)
+    - breach (?:reporting|notification|disclosure|report)
+    - (?:report|disclose|notify)(?:ing|ed)? (?:a )?breach
+    - privacy breach
+    - compromised? (?:credentials|accounts?|systems?|servers?)
+    - unauthorized access
+    - \bPIPEDA\b
+    - data protection
+    - patch(?:ed)? (?:a )?(?:critical )?(?:flaw|vulnerability)
+    - two[- ]factor
+    - encrypt(?:ed|ion) (?:their|the) (?:files|systems)
+  fr:
+    - cybers[ée]curit[ée]
+    - ran[çc]ongiciel
+    - hame[çc]onnage
+    - fuite de donn[ée]es
+    - cyberattaques?
+    - logiciels? malveillants?
+    - maliciels?
+    - violation de donn[ée]es
+    - vol d[e']identit[ée]
+    - pirat(?:age|é|e)
+    - faille de s[ée]curit[ée]
+    - vuln[ée]rabilit[ée]s?
+    - rancongiciel

@@ -1,0 +1,129 @@
+# cyber.yaml — 采集边界 + is_cyber 判定，共用同一份词表（HANDOFF §M4 [MUST]）。
+#
+# search_terms 是发给 Bluesky 的查询词（每个 term 一次 search，结果合并去重）。
+# match_terms 是 is_cyber 判定用的正则片段（含 search_terms 无法覆盖的变体）。
+#
+# [MUST] 改动此文件 = 改变采集边界 → 必须递增 version 并同步 config.query_version，
+# 否则后续 trend 无法区分「社会变化」与「搜索条件变化」。
+version: cyber_v2
+
+search_terms:
+  en:
+    - ransomware
+    - phishing
+    - data breach
+    - cyberattack
+    - cybersecurity
+    - cyber attack
+    - malware
+    - infostealer
+    - zero-day
+    - ddos
+    - hacked
+    - data leak
+    - credential stuffing
+    - spyware
+    - botnet
+    - vulnerability exploit
+    - security breach
+    - identity theft
+    - CVE
+    - threat actor
+    - incident response
+    - cyber incident
+    - password breach
+    - account takeover
+    - supply chain attack
+  fr:
+    - cybersécurité
+    - rançongiciel
+    - hameçonnage
+    - fuite de données
+    - cyberattaque
+    - logiciel malveillant
+    - violation de données
+    - vol d'identité
+    - maliciel
+
+# is_cyber 判定词（正则，大小写不敏感，\b 词边界由 labeler 添加）
+match_terms:
+  en:
+    - ransomware
+    - ransom note
+    - phish(?:ing|ed|er)?
+    - data breach(?:es)?
+    - breach(?:ed)? (?:data|records|systems?)
+    - cyber ?attacks?
+    - cyber ?securit(?:y|ies)
+    - cyber ?incidents?
+    - malware
+    - infostealers?
+    - zero[- ]days?
+    - ddos
+    - denial[- ]of[- ]service
+    - hack(?:ed|ers?|ing)
+    - data leaks?
+    - leaked (?:data|records|credentials)
+    - credential stuffing
+    - spyware
+    - botnets?
+    - exploit(?:ed|ing|s)?
+    - vulnerabilit(?:y|ies)
+    - CVE-\d{4}-\d{4,7}
+    - threat actors?
+    - identity theft
+    - account takeovers?
+    - supply[- ]chain attacks?
+    - security (?:breach|advisory|bulletin|flaw|incident)
+    - breach (?:reporting|notification|disclosure|report)
+    - (?:report|disclose|notify)(?:ing|ed)? (?:a )?breach
+    - privacy breach
+    - compromised? (?:credentials|accounts?|systems?|servers?)
+    - unauthorized access
+    - \bPIPEDA\b
+    - data protection
+    - patch(?:ed)? (?:a )?(?:critical )?(?:flaw|vulnerability)
+    - two[- ]factor
+    # --- [v2 新增] 由 canada∧¬cyber 的 319 条漏网中挖出（词频富集 + 人工核验）---
+    - dark ?web                       # 28 条漏网，含 FBI/1.53 亿驾照事件本身
+    - cyber ?crime(?:s|als?)?         # 14 条漏网
+    # HIBP 式泄露通报写法，如 "New breach: Golf Canada had 569k email addresses"
+    # （带冒号的正则必须加引号，否则 YAML 会解析成 mapping）
+    - "(?:new |another )?breach:"
+    # [v2] 裸 "hack" 名词形式。不能直接放 hacks?\b —— 会命中 life hack / growth hack；
+    # 故限定为「<资产> hack」搭配。实测漏网例："drivers licence hack"。
+    - (?:licen[cs]e|data|account|email|phone|server|system|network|database|payroll|voter|credit)s? hacks?
+    - hacks? (?:of|targeting|against) (?:the |a )?(?:\w+ ){0,2}(?:system|network|database|server|account)
+    # [v2] 其它实测英文漏网
+    - (?:operational technology|OT) (?:cyber )?risk
+    - domain authentication
+    - zero[- ]trust
+    - \bC2\b (?:server|infrastructure|resilience)
+    - unauth(?:enticated)? RCE
+    - exposed online
+    - privacy (?:commissioner|watchdog)
+    - information commissioner
+    - identity (?:theft|document) (?:service|marketplace|ring)
+    - (?:licen[cs]es|documents|records|credentials|scans) (?:for sale|up for sale)
+    - (?:leaked|posted|sold) on (?:a |the )?(?:russian |dark ?web |hacking |criminal )*(?:forum|marketplace|site)
+    - breach of (?:their|our|the|his|her) (?:personal )?(?:data|information|records)
+    - (?:data|information|records) (?:was |were )?(?:illegally |improperly )?(?:procured|obtained|harvested)
+    # [决策记录] 以下候选**未**采纳：
+    #   裸 "leak/stolen/exposed" —— 命中 77 条，其中大量是 GTA VI 游戏泄露，精度不可接受
+    #   裸 "CVE"（无编号）—— 实测命中 "Countering Violent Extremism"（反极端主义）语境
+    #   裸 "class action" —— 命中的 12 条多为政治诉讼，与泄露无必然关联
+    - encrypt(?:ed|ion) (?:their|the) (?:files|systems)
+  fr:
+    - cybers[ée]curit[ée]
+    - ran[çc]ongiciel
+    - hame[çc]onnage
+    - fuite de donn[ée]es
+    - cyberattaques?
+    - logiciels? malveillants?
+    - maliciels?
+    - violation de donn[ée]es
+    - vol d[e']identit[ée]
+    - pirat(?:age|é|e)
+    - faille de s[ée]curit[ée]
+    - vuln[ée]rabilit[ée]s?
+    - rancongiciel

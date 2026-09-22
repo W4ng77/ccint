@@ -1,0 +1,132 @@
+# other 主题的开放式编码样本（v1 Phase 5）
+# 抽样：rules_v2 判为 relevant 且 topic_key='other' 的 287 条中，
+#       按 md5(post_id || 'ccint-other-2026') 排序取前 120 条 —— 确定性可复现。
+# 编码者：Claude（第一遍；非领域专家，可覆盖）。日期 2026-09-21。
+#
+# code 的三类前缀，区分的是三种**性质不同**的问题：
+#   MISS_<topic>  分类器召回失败 —— 该帖属于**已有**的桶，但关键词规则没抓到。
+#                 这是 bug，不是 taxonomy 缺口。
+#   NEW_<cluster> 真实的 taxonomy 缺口 —— 现有 11 个桶里没有它的位置。
+#   FP            相关性误判 —— 根本不是 Canada×cyber，本不该进 relevant。
+#   GENERIC       确属相关，但没有可归纳的主题（新闻聚合、孤立事件）。
+post_id	code	note
+90037	NEW_geopolitics_sovereignty	数据中心公众信任 / 数字主权
+33718	NEW_community_events	BSides Edmonton 讲者
+3068	NEW_consumer_advice	SMB 安全倡导
+84549	MISS_policy_regulation	魁省网安部长 / 政府治理
+111505	MISS_policy_regulation	Bill C-36 去识别化罚则
+41512	MISS_data_breach	Thomson Reuters 法院系统
+94826	NEW_geopolitics_sovereignty	加欧联盟 / 北极 / 关键矿产
+94524	NEW_community_events	Waterloo 学术工作坊
+94160	NEW_community_events	BSides VI 赞助商
+11697	NEW_geopolitics_sovereignty	Cloud Act / 数据主权
+98470	NEW_community_events	BSides 赞助商
+43709	MISS_data_breach	1.53 亿驾照泄露
+889	NEW_industry_market	Crypto4A FIPS 认证
+13107	MISS_data_breach	Golf Canada 56.9 万
+90385	NEW_geopolitics_sovereignty	加欧北极合作
+68349	MISS_data_breach	安省法院记录
+16921	NEW_community_events	CyberSci 国际赛
+58319	NEW_community_events	BSides 主题演讲
+52189	GENERIC	新闻聚合
+94199	NEW_community_events	CyberSci 区域赛
+82791	FP	标签堆砌，与加拿大无实质关联
+64056	NEW_community_events	招聘
+58482	NEW_community_events	Hackfest 合作伙伴
+3913	FP	演唱会门票转移，非网安
+9073	NEW_community_events	BSides 社区伙伴
+111506	MISS_policy_regulation	Bill C-36（重复报道）
+41732	MISS_gov_advisory	CISA/FBI/Five Eyes 通报指引
+94827	NEW_geopolitics_sovereignty	加欧联盟
+46609	NEW_consumer_advice	CIBC 弱密码规则
+41354	MISS_data_breach	Thomson Reuters
+21226	NEW_community_events	BSides 赞助商
+44823	NEW_community_events	CIGF 渥太华
+37664	FP	音乐报道，cyber 仅出现在赞助标签
+105791	GENERIC	混合新闻
+68347	MISS_data_breach	C-Track 安省法院
+102350	NEW_ai_security	Gemini 越权攻击三家公司
+47892	MISS_data_breach	Risky Biz 汇总含 C-Track
+73464	NEW_geopolitics_sovereignty	网络战 / 格陵兰 / 加拿大
+73028	MISS_data_breach	1.53 亿驾照
+37815	NEW_postquantum	后量子迁移
+1017	MISS_data_breach	SickKids 员工数据
+1440	FP	RCMP 叛国调查，无网安内容
+63918	MISS_data_breach	安省法院记录
+64314	NEW_geopolitics_sovereignty	数字主权 / 数据中心
+77556	GENERIC	多伦多交通标牌被改，孤立事件
+102252	MISS_gov_advisory	Five Eyes 通报指引
+27189	FP	Google 改湖名，非网安
+86255	NEW_industry_market	CCN Intelligence 发布
+23766	MISS_ransomware	魁省建设委员会瘫痪
+100439	NEW_ai_security	OpenAI agent 越权通信
+38973	MISS_data_breach	安省法院系统
+17239	NEW_industry_market	Cisco ITSG-33 / FIPS
+58415	MISS_policy_regulation	CMA 推动 Bill C-34
+33892	NEW_community_events	BSides 讲者
+41920	NEW_community_events	BSides 白金赞助
+32459	NEW_geopolitics_sovereignty	外国行为体介入亚省分离议题
+98715	NEW_industry_market	Fortinet 卡尔加里中心
+72748	NEW_community_events	BSides 讲者
+51232	NEW_ai_security	OpenAI agent 攻击 Hugging Face
+94859	MISS_data_breach	1.53 亿驾照
+85866	NEW_community_events	BSides 主题演讲
+72770	NEW_community_events	OWASP Ottawa
+668	NEW_community_events	博士招生
+47490	MISS_data_breach	安省法院（记者报道）
+86722	MISS_critical_infrastructure	Nova Scotia Power
+64361	NEW_community_events	BSides 讲者
+40521	MISS_policy_regulation	AMC Bill 34（法语）
+68387	FP	CIBC 融资承诺，非网安
+3973	FP	足球 hacked down
+37233	MISS_critical_infrastructure	NS Power 攻击余波
+72901	NEW_community_events	OWASP / SecTor
+95826	MISS_data_breach	亚省驾照泄露
+59151	FP	西岸贸易禁令
+105151	FP	莫斯科选举系统，非加拿大
+17176	NEW_community_events	BSides 讲者
+61253	FP	学生自我介绍
+83286	FP	私人轶事：黑了伴侣的 MSN 账号
+34087	NEW_industry_market	Superna 产品发布
+39006	FP	湖名 / 条约
+41713	NEW_community_events	CIGF 报名
+43525	MISS_data_breach	1.53 亿驾照
+68747	NEW_community_events	BSides 讲者
+94594	NEW_geopolitics_sovereignty	Plurilock/ADGA 国防认证
+32457	NEW_geopolitics_sovereignty	外国行为体（重复）
+5562	NEW_community_events	CyberSci Team Canada
+81778	MISS_data_breach	安省法院
+16569	MISS_ransomware	魁省建设委员会
+58553	NEW_community_events	BSides 讲者
+42400	MISS_data_breach	Thomson Reuters C-Track
+45960	NEW_community_events	BSides VI 日程
+94197	NEW_community_events	CyberSci 简介
+98562	NEW_community_events	CyberSci 欧洲赛
+13685	NEW_geopolitics_sovereignty	NB Lastwall 国防投资
+56367	MISS_data_breach	安省法院
+94715	NEW_postquantum	BDC 10 亿量子投资
+115369	NEW_community_events	BSides 学生社团
+24584	NEW_community_events	BSides WiCyS
+93991	MISS_critical_infrastructure	安省医疗机构攻击回顾
+72542	NEW_community_events	BSides VI
+83273	MISS_policy_regulation	年龄验证 / 数据收集政策
+102571	NEW_community_events	BSides VI 票务
+90193	NEW_industry_market	CIRA Canadian Shield
+10491	FP	假设性玩笑
+81995	NEW_community_events	BSides VI 赞助商
+70060	FP	语音信箱被黑轶事
+89925	NEW_geopolitics_sovereignty	加欧经济安全联盟
+41526	MISS_data_breach	Thomson Reuters
+102540	NEW_geopolitics_sovereignty	情报共享中断
+40441	NEW_community_events	招聘
+68142	MISS_data_breach	安省三级法院
+42007	NEW_community_events	BSides 讲者
+64312	NEW_community_events	Hackfest 征集
+68380	NEW_geopolitics_sovereignty	NATO 关键原材料
+89571	MISS_data_breach	Nexus 用户数据
+63972	NEW_community_events	Hackfest villages
+68867	NEW_consumer_advice	NordPass 推广
+72182	NEW_consumer_advice	信用报告锁定 / IDScan
+60083	MISS_data_breach	安省法院（重复）
+919	MISS_data_breach	Golf Canada 56.9 万
+58474	NEW_community_events	Hackfest 合作伙伴

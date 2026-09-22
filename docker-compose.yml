@@ -1,0 +1,32 @@
+# 仅 postgres。见 README「决策记录 D1」：
+# 目标机器无 docker/podman 且无 sudo，实际运行用 pgserver（用户态 PG 16.2）。
+# 本文件保留供其它机器使用 —— 在有 docker 的环境下它是更标准的起库方式。
+#
+# 用法：
+#   docker compose up -d
+#   CCINT_DB_URL=postgresql://ccint:ccint@localhost:5433/ccint ccint db migrate
+services:
+  postgres:
+    image: postgres:16
+    container_name: ccint-postgres
+    environment:
+      POSTGRES_USER: ccint
+      POSTGRES_PASSWORD: ccint
+      POSTGRES_DB: ccint
+      # [MUST] 时间一律 UTC。见 migrations/001_init.sql 的说明 ——
+      # date_trunc 对 timestamptz 的按天分桶取决于 session TimeZone。
+      TZ: UTC
+      PGTZ: UTC
+    command: ["postgres", "-c", "timezone=UTC"]
+    ports:
+      - "5433:5432"     # 避开宿主机可能已占用的 5432
+    volumes:
+      - ccint_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ccint -d ccint"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  ccint_pgdata:

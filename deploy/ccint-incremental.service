@@ -1,0 +1,11 @@
+# systemd user unit（备选方案）。
+# 注意：本机 Linger=no，用户登出后 user service 会停止。若要用 systemd 而非 cron，
+# 需先执行 `loginctl enable-linger $USER`（需要管理员授权）。
+[Unit]
+Description=ccint incremental collection
+After=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/jingrui
+ExecStart=%h/jingrui/scripts/collect_incremental.sh

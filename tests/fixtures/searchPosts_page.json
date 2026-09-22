@@ -1,0 +1,654 @@
+{
+ "posts": [
+  {
+   "uri": "at://did:plc:q5m4pspc6zmqru6b4dpg65yv/app.bsky.feed.post/3mvvup2drw72g",
+   "cid": "bafyreicsbcp6q3ox4srjartjr6ormy7ydgjy5gzjhjw4tglzkm2buzhjsq",
+   "author": {
+    "did": "did:plc:q5m4pspc6zmqru6b4dpg65yv",
+    "handle": "newssecia.bsky.social",
+    "displayName": "",
+    "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:q5m4pspc6zmqru6b4dpg65yv/bafkreig4ihytem4nxoac446fxjbdncknsnpxsdukxyyrj4sdqbz6hcecl4",
+    "associated": {
+     "activitySubscription": {
+      "allowSubscriptions": "followers"
+     }
+    },
+    "viewer": {
+     "muted": false,
+     "mutedOnlyReposts": false,
+     "mutedOnlyQuoteposts": false,
+     "blockedBy": false
+    },
+    "labels": [],
+    "createdAt": "2026-06-20T17:09:21.363Z"
+   },
+   "record": {
+    "$type": "app.bsky.feed.post",
+    "createdAt": "2026-09-19T23:49:13.476392+00:00",
+    "facets": [
+     {
+      "$type": "app.bsky.richtext.facet",
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#link",
+        "uri": "https://www.bleepingcomputer.com/news/security/shinyhunters-hacks-clop-leak-site-threatens-to-extort-ransomware-gang/"
+       }
+      ],
+      "index": {
+       "$type": "app.bsky.richtext.facet#byteSlice",
+       "byteEnd": 285,
+       "byteStart": 168
+      }
+     }
+    ],
+    "labels": {
+     "$type": "com.atproto.label.defs#selfLabels",
+     "values": [
+      {
+       "$type": "com.atproto.label.defs#selfLabel",
+       "val": "bot"
+      }
+     ]
+    },
+    "langs": [
+     "en"
+    ],
+    "text": "🤖 ShinyHunters breached Cl0p ransomware's Tor leak site, defacing it and allegedly stealing the onion private keys — victims could now take it offline themselves.\nhttps://www.bleepingcomputer.com/news/security/shinyhunters-hacks-clop-leak-site-threatens-to-extort-ransomware-gang/"
+   },
+   "bookmarkCount": 0,
+   "replyCount": 0,
+   "repostCount": 0,
+   "likeCount": 0,
+   "quoteCount": 0,
+   "indexedAt": "2026-09-19T23:49:13.667Z",
+   "viewer": {
+    "bookmarked": false,
+    "threadMuted": false,
+    "embeddingDisabled": false
+   },
+   "labels": [
+    {
+     "src": "did:plc:q5m4pspc6zmqru6b4dpg65yv",
+     "uri": "at://did:plc:q5m4pspc6zmqru6b4dpg65yv/app.bsky.feed.post/3mvvup2drw72g",
+     "cid": "bafyreicsbcp6q3ox4srjartjr6ormy7ydgjy5gzjhjw4tglzkm2buzhjsq",
+     "val": "bot",
+     "cts": "2026-09-19T23:49:13.476Z"
+    }
+   ]
+  },
+  {
+   "uri": "at://did:plc:u6celkmubfsmbus5m3aqcrla/app.bsky.feed.post/3mvvui6h7mt24",
+   "cid": "bafyreicdirg4q2d5jfgi6f3xjc3vyw23rdv36v5dhoo7kkmuurebaebwem",
+   "author": {
+    "did": "did:plc:u6celkmubfsmbus5m3aqcrla",
+    "handle": "hendryadrian.bsky.social",
+    "displayName": "Cybersecurity News Everyday",
+    "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:u6celkmubfsmbus5m3aqcrla/bafkreigp2vhc2ks7mxcas4tpjy4mfrncu42ccqi3bznnhtgjaervbllhtq",
+    "associated": {
+     "chat": {
+      "allowIncoming": "all"
+     },
+     "activitySubscription": {
+      "allowSubscriptions": "followers"
+     }
+    },
+    "viewer": {
+     "muted": false,
+     "mutedOnlyReposts": false,
+     "mutedOnlyQuoteposts": false,
+     "blockedBy": false
+    },
+    "labels": [],
+    "createdAt": "2024-12-25T12:33:56.543Z"
+   },
+   "record": {
+    "$type": "app.bsky.feed.post",
+    "createdAt": "2026-09-19T23:45:22+00:00",
+    "embed": {
+     "$type": "app.bsky.embed.external",
+     "external": {
+      "description": "arcusmedia ransomware allegedly targeted Schneider’s Computing & Websites Ltd. (Canada) and its website at www.scomputing.ca, encrypting data and disrupting services. The claim indicates an impact to CA #Canada",
+      "thumb": {
+       "$type": "blob",
+       "ref": {
+        "$link": "bafkreihnlosviffclcfwfqyjxk5jgckpcrnfi7fsb5ntdpp4spn7zwbw64"
+       },
+       "mimeType": "image/png",
+       "size": 516123
+      },
+      "title": "Ransom! Schneider,’s Computing (SEP-2026)",
+      "uri": "https://www.hendryadrian.com/ransom-schneiders-computing-sep-2026/"
+     }
+    },
+    "facets": [
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "Canada"
+       }
+      ],
+      "index": {
+       "byteEnd": 166,
+       "byteStart": 159
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "Ransomware"
+       }
+      ],
+      "index": {
+       "byteEnd": 178,
+       "byteStart": 167
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "Tech"
+       }
+      ],
+      "index": {
+       "byteEnd": 184,
+       "byteStart": 179
+      }
+     }
+    ],
+    "text": "Arcusmedia claims responsibility for a ransomware attack on Schneider's Computing & Websites Ltd., a Canadian technology firm. Deadline reported for Sept. 26. #Canada #Ransomware #Tech"
+   },
+   "embed": {
+    "external": {
+     "uri": "https://www.hendryadrian.com/ransom-schneiders-computing-sep-2026/",
+     "title": "Ransom! Schneider,’s Computing (SEP-2026)",
+     "description": "arcusmedia ransomware allegedly targeted Schneider’s Computing & Websites Ltd. (Canada) and its website at www.scomputing.ca, encrypting data and disrupting services. The claim indicates an impact to CA #Canada",
+     "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:u6celkmubfsmbus5m3aqcrla/bafkreihnlosviffclcfwfqyjxk5jgckpcrnfi7fsb5ntdpp4spn7zwbw64"
+    },
+    "$type": "app.bsky.embed.external#view"
+   },
+   "bookmarkCount": 0,
+   "replyCount": 0,
+   "repostCount": 0,
+   "likeCount": 0,
+   "quoteCount": 0,
+   "indexedAt": "2026-09-19T23:45:23.866Z",
+   "viewer": {
+    "bookmarked": false,
+    "threadMuted": false,
+    "embeddingDisabled": false
+   },
+   "labels": []
+  },
+  {
+   "uri": "at://did:plc:u6celkmubfsmbus5m3aqcrla/app.bsky.feed.post/3mvvtnfbzno2x",
+   "cid": "bafyreicbr7x6tg4oee754gliwqczjt3c5bk3e5vu4vw3gm2kcdastmp5cm",
+   "author": {
+    "did": "did:plc:u6celkmubfsmbus5m3aqcrla",
+    "handle": "hendryadrian.bsky.social",
+    "displayName": "Cybersecurity News Everyday",
+    "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:u6celkmubfsmbus5m3aqcrla/bafkreigp2vhc2ks7mxcas4tpjy4mfrncu42ccqi3bznnhtgjaervbllhtq",
+    "associated": {
+     "chat": {
+      "allowIncoming": "all"
+     },
+     "activitySubscription": {
+      "allowSubscriptions": "followers"
+     }
+    },
+    "viewer": {
+     "muted": false,
+     "mutedOnlyReposts": false,
+     "mutedOnlyQuoteposts": false,
+     "blockedBy": false
+    },
+    "labels": [],
+    "createdAt": "2024-12-25T12:33:56.543Z"
+   },
+   "record": {
+    "$type": "app.bsky.feed.post",
+    "createdAt": "2026-09-19T23:30:23+00:00",
+    "embed": {
+     "$type": "app.bsky.embed.external",
+     "external": {
+      "description": "Arcusmedia ransomware claims to have targeted AKAZZO, leveraging access to akazzo.com.br to disrupt its operations and extort payment. The impacted country(s): #Brazil",
+      "thumb": {
+       "$type": "blob",
+       "ref": {
+        "$link": "bafkreidlurb25phnypppkenuhhmeg4turjwv6bqki5jfsv3feftgagfo4q"
+       },
+       "mimeType": "image/png",
+       "size": 232041
+      },
+      "title": "Ransom! AKAZZO (SEP-2026)",
+      "uri": "https://www.hendryadrian.com/ransom-akazzo-sep-2026/"
+     }
+    },
+    "facets": [
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "Brazil"
+       }
+      ],
+      "index": {
+       "byteEnd": 137,
+       "byteStart": 130
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "Ransomware"
+       }
+      ],
+      "index": {
+       "byteEnd": 149,
+       "byteStart": 138
+      }
+     },
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#tag",
+        "tag": "Footwear"
+       }
+      ],
+      "index": {
+       "byteEnd": 159,
+       "byteStart": 150
+      }
+     }
+    ],
+    "text": "Arcusmedia claims a ransomware attack on AKAZZO, a Brazilian footwear brand, alleging disrupted operations and extortion demands. #Brazil #Ransomware #Footwear"
+   },
+   "embed": {
+    "external": {
+     "uri": "https://www.hendryadrian.com/ransom-akazzo-sep-2026/",
+     "title": "Ransom! AKAZZO (SEP-2026)",
+     "description": "Arcusmedia ransomware claims to have targeted AKAZZO, leveraging access to akazzo.com.br to disrupt its operations and extort payment. The impacted country(s): #Brazil",
+     "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:u6celkmubfsmbus5m3aqcrla/bafkreidlurb25phnypppkenuhhmeg4turjwv6bqki5jfsv3feftgagfo4q"
+    },
+    "$type": "app.bsky.embed.external#view"
+   },
+   "bookmarkCount": 0,
+   "replyCount": 0,
+   "repostCount": 0,
+   "likeCount": 0,
+   "quoteCount": 0,
+   "indexedAt": "2026-09-19T23:30:25.165Z",
+   "viewer": {
+    "bookmarked": false,
+    "threadMuted": false,
+    "embeddingDisabled": false
+   },
+   "labels": []
+  },
+  {
+   "uri": "at://did:plc:i5a2vsezf56iu2yjtmb7m2tb/app.bsky.feed.post/3mvvrktfpdc2y",
+   "cid": "bafyreigbx7xjshk4dunilikel2wcwkyrk75iuxoq7z4senuev3fmtdi6ue",
+   "author": {
+    "did": "did:plc:i5a2vsezf56iu2yjtmb7m2tb",
+    "handle": "falconfeedsio.bsky.social",
+    "displayName": "FalconFeeds.io",
+    "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:i5a2vsezf56iu2yjtmb7m2tb/bafkreihdber4wikmghhaydin6dvbci3h2uwkeqypkjepwazw4t2cppiloy",
+    "associated": {
+     "chat": {
+      "allowIncoming": "none",
+      "allowGroupInvites": "none"
+     },
+     "activitySubscription": {
+      "allowSubscriptions": "followers"
+     }
+    },
+    "viewer": {
+     "muted": false,
+     "mutedOnlyReposts": false,
+     "mutedOnlyQuoteposts": false,
+     "blockedBy": false
+    },
+    "labels": [],
+    "createdAt": "2024-12-02T10:49:44.846Z"
+   },
+   "record": {
+    "$type": "app.bsky.feed.post",
+    "createdAt": "2026-09-19T22:53:10.858Z",
+    "langs": [
+     "en"
+    ],
+    "text": "📢 Ransomware Alert: 🇩🇪\n\nKreishandwerkerschaft Borken (kh-borken.de), a Germany-based Professional Services company, has reportedly fallen victim to Rhysida ransomware.\n\nNB: The group intends to publish the data within  6-7 days."
+   },
+   "bookmarkCount": 0,
+   "replyCount": 1,
+   "repostCount": 0,
+   "likeCount": 0,
+   "quoteCount": 0,
+   "indexedAt": "2026-09-19T22:53:14.357Z",
+   "viewer": {
+    "bookmarked": false,
+    "threadMuted": false,
+    "embeddingDisabled": false
+   },
+   "labels": []
+  },
+  {
+   "uri": "at://did:plc:i5a2vsezf56iu2yjtmb7m2tb/app.bsky.feed.post/3mvvrji6ue22y",
+   "cid": "bafyreicylufqqbeczeve32ydd225mq52kjdvmnzg7nwvlkzvgfh2ltd7oq",
+   "author": {
+    "did": "did:plc:i5a2vsezf56iu2yjtmb7m2tb",
+    "handle": "falconfeedsio.bsky.social",
+    "displayName": "FalconFeeds.io",
+    "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:i5a2vsezf56iu2yjtmb7m2tb/bafkreihdber4wikmghhaydin6dvbci3h2uwkeqypkjepwazw4t2cppiloy",
+    "associated": {
+     "chat": {
+      "allowIncoming": "none",
+      "allowGroupInvites": "none"
+     },
+     "activitySubscription": {
+      "allowSubscriptions": "followers"
+     }
+    },
+    "viewer": {
+     "muted": false,
+     "mutedOnlyReposts": false,
+     "mutedOnlyQuoteposts": false,
+     "blockedBy": false
+    },
+    "labels": [],
+    "createdAt": "2024-12-02T10:49:44.846Z"
+   },
+   "record": {
+    "$type": "app.bsky.feed.post",
+    "createdAt": "2026-09-19T22:52:25.544Z",
+    "embed": {
+     "$type": "app.bsky.embed.images",
+     "images": [
+      {
+       "alt": "",
+       "aspectRatio": {
+        "height": 115,
+        "width": 1317
+       },
+       "image": {
+        "$type": "blob",
+        "ref": {
+         "$link": "bafkreibjezoaopgox5wdarcjglnpl7q6jreuk4xbdpv7pc4uqtk7ckzwha"
+        },
+        "mimeType": "image/jpeg",
+        "size": 32222
+       }
+      }
+     ]
+    },
+    "facets": [
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#link",
+        "uri": "https://voltgames.io"
+       }
+      ],
+      "index": {
+       "byteEnd": 57,
+       "byteStart": 45
+      }
+     }
+    ],
+    "langs": [
+     "en"
+    ],
+    "text": "📢 Ransomware Alert: 🇵🇹\n\nVolt Games (voltgames.io), a Portugal-based Gaming has reportedly fallen victim to UnSafe ransomware\n\nNB: The group intends to publish the data within 4-5 days.\n\n🔍Key Details:\n\n🛡️Threat actor: UnSafe \n📅 Reported on: 19/09/26"
+   },
+   "embed": {
+    "images": [
+     {
+      "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:i5a2vsezf56iu2yjtmb7m2tb/bafkreibjezoaopgox5wdarcjglnpl7q6jreuk4xbdpv7pc4uqtk7ckzwha",
+      "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:i5a2vsezf56iu2yjtmb7m2tb/bafkreibjezoaopgox5wdarcjglnpl7q6jreuk4xbdpv7pc4uqtk7ckzwha",
+      "alt": "",
+      "aspectRatio": {
+       "height": 115,
+       "width": 1317
+      }
+     }
+    ],
+    "$type": "app.bsky.embed.images#view"
+   },
+   "bookmarkCount": 0,
+   "replyCount": 0,
+   "repostCount": 0,
+   "likeCount": 0,
+   "quoteCount": 0,
+   "indexedAt": "2026-09-19T22:52:27.862Z",
+   "viewer": {
+    "bookmarked": false,
+    "threadMuted": false,
+    "embeddingDisabled": false
+   },
+   "labels": []
+  },
+  {
+   "uri": "at://did:plc:i5a2vsezf56iu2yjtmb7m2tb/app.bsky.feed.post/3mvvripcxm22y",
+   "cid": "bafyreiez7kv5mqlomvmfkkzkgz26ap3ktkfyceqrqcvamtqktv4v2c4ppy",
+   "author": {
+    "did": "did:plc:i5a2vsezf56iu2yjtmb7m2tb",
+    "handle": "falconfeedsio.bsky.social",
+    "displayName": "FalconFeeds.io",
+    "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:i5a2vsezf56iu2yjtmb7m2tb/bafkreihdber4wikmghhaydin6dvbci3h2uwkeqypkjepwazw4t2cppiloy",
+    "associated": {
+     "chat": {
+      "allowIncoming": "none",
+      "allowGroupInvites": "none"
+     },
+     "activitySubscription": {
+      "allowSubscriptions": "followers"
+     }
+    },
+    "viewer": {
+     "muted": false,
+     "mutedOnlyReposts": false,
+     "mutedOnlyQuoteposts": false,
+     "blockedBy": false
+    },
+    "labels": [],
+    "createdAt": "2024-12-02T10:49:44.846Z"
+   },
+   "record": {
+    "$type": "app.bsky.feed.post",
+    "createdAt": "2026-09-19T22:51:59.465Z",
+    "embed": {
+     "$type": "app.bsky.embed.images",
+     "images": [
+      {
+       "alt": "",
+       "aspectRatio": {
+        "height": 487,
+        "width": 965
+       },
+       "image": {
+        "$type": "blob",
+        "ref": {
+         "$link": "bafkreieb4qp36ynlmob6qar2ptizslagkwg3o7dkghun3yw5r2tpwp2re4"
+        },
+        "mimeType": "image/jpeg",
+        "size": 229687
+       }
+      }
+     ]
+    },
+    "langs": [
+     "en"
+    ],
+    "text": "🚨 Ransomware Alert 🚨\n\nARCUS MEDIA ransomware group has added 2 new victims to their dark web portal.\n\n* Akazzo 🇧🇷\n* Schneiders Computing Ltd 🇨🇦"
+   },
+   "embed": {
+    "images": [
+     {
+      "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:i5a2vsezf56iu2yjtmb7m2tb/bafkreieb4qp36ynlmob6qar2ptizslagkwg3o7dkghun3yw5r2tpwp2re4",
+      "fullsize": "https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:i5a2vsezf56iu2yjtmb7m2tb/bafkreieb4qp36ynlmob6qar2ptizslagkwg3o7dkghun3yw5r2tpwp2re4",
+      "alt": "",
+      "aspectRatio": {
+       "height": 487,
+       "width": 965
+      }
+     }
+    ],
+    "$type": "app.bsky.embed.images#view"
+   },
+   "bookmarkCount": 0,
+   "replyCount": 0,
+   "repostCount": 0,
+   "likeCount": 0,
+   "quoteCount": 0,
+   "indexedAt": "2026-09-19T22:52:01.757Z",
+   "viewer": {
+    "bookmarked": false,
+    "threadMuted": false,
+    "embeddingDisabled": false
+   },
+   "labels": []
+  },
+  {
+   "uri": "at://did:plc:qbue3issriwx36gaj7b6febu/app.bsky.feed.post/3mvvrc6v42d25",
+   "cid": "bafyreifz3ruyboa7g6aaiz5fc26ui7daehv23g66nnklbllnnn5ecj5r2u",
+   "author": {
+    "did": "did:plc:qbue3issriwx36gaj7b6febu",
+    "handle": "360techadvisors.bsky.social",
+    "displayName": "",
+    "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:qbue3issriwx36gaj7b6febu/bafkreiaweql5m2rqyvodkneccuicwolkfb5molmheq5utcur6qpa7cb4xe",
+    "associated": {
+     "activitySubscription": {
+      "allowSubscriptions": "followers"
+     }
+    },
+    "viewer": {
+     "muted": false,
+     "mutedOnlyReposts": false,
+     "mutedOnlyQuoteposts": false,
+     "blockedBy": false
+    },
+    "labels": [],
+    "createdAt": "2024-12-04T12:23:16.343Z"
+   },
+   "record": {
+    "$type": "app.bsky.feed.post",
+    "createdAt": "2026-09-19T22:48:20Z",
+    "embed": {
+     "$type": "app.bsky.embed.external",
+     "external": {
+      "description": "In this case, however, the technology was apparently misused to conceal the origin of attacks, cover up evidence, and hinder investigations. According ...",
+      "title": "Operation Saffron: Criminal VPN service for ransomware shut down - B2B Cyber Security",
+      "uri": "http://dlvr.it/TVYfWf"
+     }
+    },
+    "text": ""
+   },
+   "embed": {
+    "external": {
+     "uri": "http://dlvr.it/TVYfWf",
+     "title": "Operation Saffron: Criminal VPN service for ransomware shut down - B2B Cyber Security",
+     "description": "In this case, however, the technology was apparently misused to conceal the origin of attacks, cover up evidence, and hinder investigations. According ..."
+    },
+    "$type": "app.bsky.embed.external#view"
+   },
+   "bookmarkCount": 0,
+   "replyCount": 0,
+   "repostCount": 0,
+   "likeCount": 1,
+   "quoteCount": 0,
+   "indexedAt": "2026-09-19T22:48:21.163Z",
+   "viewer": {
+    "bookmarked": false,
+    "threadMuted": false,
+    "embeddingDisabled": false
+   },
+   "labels": []
+  },
+  {
+   "uri": "at://did:plc:cjkobs4ue3nzabvgnydz4iwq/app.bsky.feed.post/3mvvoo33lo224",
+   "cid": "bafyreicbaynt33luugewmt44nh4wmrrgtbfsdajpw25anopgzmuxjgtdii",
+   "author": {
+    "did": "did:plc:cjkobs4ue3nzabvgnydz4iwq",
+    "handle": "samilaiho.com",
+    "displayName": "Sami Laiho",
+    "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:cjkobs4ue3nzabvgnydz4iwq/bafkreihkfp7di6oyh3r7a44brxucanfmyfp6ru2orjz6jqwxtvcy7g3f3a",
+    "associated": {
+     "activitySubscription": {
+      "allowSubscriptions": "followers"
+     }
+    },
+    "viewer": {
+     "muted": false,
+     "mutedOnlyReposts": false,
+     "mutedOnlyQuoteposts": false,
+     "blockedBy": false
+    },
+    "labels": [],
+    "createdAt": "2023-06-28T08:10:56.202Z"
+   },
+   "record": {
+    "$type": "app.bsky.feed.post",
+    "createdAt": "2026-09-19T22:01:18.353Z",
+    "embed": {
+     "$type": "app.bsky.embed.external",
+     "external": {
+      "description": "Ransomware incidents in Japan rose 4.7% year over year. The Gentlemen was the most active group, with leak-site listings more than doubling from January to July. Qilin ranked second and appeared to us...",
+      "thumb": {
+       "$type": "blob",
+       "ref": {
+        "$link": "bafkreib67sbokes6t6edhll5ejjc7zd5g3oidq2p5z5vsux5767rmdf4xe"
+       },
+       "mimeType": "image/jpeg",
+       "size": 466356
+      },
+      "title": "Ransomware incidents in Japan in the first half of 2026: Investigation of The Gentlemen’s infrastructure and evidence of Qilin's AI use",
+      "uri": "https://blog.talosintelligence.com/ransomware-incidents-in-japan-in-the-first-half-of-2026/"
+     }
+    },
+    "facets": [
+     {
+      "features": [
+       {
+        "$type": "app.bsky.richtext.facet#link",
+        "uri": "https://blog.talosintelligence.com/ransomware-incidents-in-japan-in-the-first-half-of-2026/"
+       }
+      ],
+      "index": {
+       "byteEnd": 180,
+       "byteStart": 138
+      }
+     }
+    ],
+    "langs": [
+     "en"
+    ],
+    "text": "Ransomware incidents in Japan in the first half of 2026: Investigation of The\nGentlemen’s infrastructure and evidence of Qilin's AI use\nblog.talosintelligence.com/ransomware-i..."
+   },
+   "embed": {
+    "external": {
+     "uri": "https://blog.talosintelligence.com/ransomware-incidents-in-japan-in-the-first-half-of-2026/",
+     "title": "Ransomware incidents in Japan in the first half of 2026: Investigation of The Gentlemen’s infrastructure and evidence of Qilin's AI use",
+     "description": "Ransomware incidents in Japan rose 4.7% year over year. The Gentlemen was the most active group, with leak-site listings more than doubling from January to July. Qilin ranked second and appeared to us...",
+     "thumb": "https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:cjkobs4ue3nzabvgnydz4iwq/bafkreib67sbokes6t6edhll5ejjc7zd5g3oidq2p5z5vsux5767rmdf4xe"
+    },
+    "$type": "app.bsky.embed.external#view"
+   },
+   "bookmarkCount": 0,
+   "replyCount": 0,
+   "repostCount": 0,
+   "likeCount": 0,
+   "quoteCount": 0,
+   "indexedAt": "2026-09-19T22:01:20.261Z",
+   "viewer": {
+    "bookmarked": false,
+    "threadMuted": false,
+    "embeddingDisabled": false
+   },
+   "labels": []
+  }
+ ],
+ "cursor": "eyJzIjpbMTc4OTgyNTUyMzAwMCwiZGlkOnBsYzp1NmNlbGttdWJmc21idXM1bTNhcWNybGEiLCIzbXZ1c3hjdWduNTJjIl19"
+}
