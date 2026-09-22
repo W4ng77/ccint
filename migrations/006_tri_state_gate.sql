@@ -1,0 +1,13 @@
+-- is_cyber 允许 NULL（T3 修正）。
+--
+-- 为什么：llm_v2 的判定门分两阶段，cyber 只在检出加拿大实体的帖子上判。
+-- 原先把「从未判定」写成 false，于是 87,813 行 is_cyber=false 里绝大多数
+-- 根本没被问过这个问题。
+--
+-- 这正是本项目在 actor 层立过的规矩：``unclassified`` 的含义是「样本不足以
+-- 判断」而不是「判断为阴性」，把不确定当成阴性会系统性地压低某一侧。这里的
+-- 方向是把「没问过」记成「问过且答否」，任何后续对 is_cyber 的统计都会被它
+-- 污染，而污染的方向恰好是让判定门看起来比实际更严。
+--
+-- is_canada / is_relevant 保持 NOT NULL：它们在每一行上都被判定过。
+ALTER TABLE post_labels ALTER COLUMN is_cyber DROP NOT NULL;
