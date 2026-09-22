@@ -11,7 +11,7 @@ from collections import defaultdict
 
 from ccint import db
 
-VERSIONS = ["rules_v1", "rules_v2", "llm_v2"]
+VERSIONS = ["rules_v2", "llm_v2a", "llm_v2c"]
 
 
 def gate_table() -> dict[str, dict[int, bool]]:

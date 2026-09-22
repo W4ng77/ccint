@@ -95,6 +95,44 @@ def locate(text: str, entity_text: str) -> int:
     return i if i >= 0 else text.lower().find(entity_text.lower())
 
 
+CA_DOMAIN_SUFFIXES = (".ca", ".gc.ca", ".qc.ca", ".on.ca", ".bc.ca", ".ab.ca")
+
+
+def validate_entities(text: str, entities: list[dict]) -> tuple[list[dict], list[dict]]:
+    """机械校验模型抽出的实体。返回 ``(保留, 丢弃)``。
+
+    两条规则,都不需要再问模型:
+
+    **1. 原文里找不到的实体一律丢弃。** 因为偏移是用 ``str.find`` 事后算的而不是
+    向模型要的,「找不到」就等价于「模型编的」。这条校验是那个决定的副产品:
+    当初不要 span 只是因为小模型算不准偏移,结果它成了一条独立的幻觉检测通道。
+    实测 prompt v2 抽出的 ``place`` 实体有 48.0% 在原文里根本不存在 —— 模型在
+    讲法国教育部被攻击的法语帖里凭空写出 "Canada"。
+
+    **2. 非加拿大顶级域的 domain 实体一律丢弃。** prompt 里写「``.ca`` 或
+    ``.gc.ca`` 域名算加拿大实体」,模型把它泛化成了「域名算加拿大实体」:实测
+    抽出的 1,296 个 domain 里只有 24.1% 真的是 ``.ca``,其余是 ``trustedsec.com``、
+    ``malwarebytes.com``,甚至 ``ia.cr``(哥斯达黎加顶级域)。
+
+    [MUST] 这一层必须留着,即使 prompt 之后修好了。它是廉价的、确定性的,而且
+    它检出的这类错误恰好是外部评测集看不见的 —— ``E_reg_neg`` 报的特异度是
+    99.0%,而全语料上的真实假阳性率是 33.5%,因为那个负例集里既没有域名也没有
+    法语,不代表模型实际面对的总体。
+    """
+    keep, drop = [], []
+    low = (text or "").lower()
+    for e in entities:
+        t = (e.get("text") or "").strip()
+        if not t or (t not in (text or "") and t.lower() not in low):
+            drop.append({**e, "reason": "not_in_text"})
+        elif e.get("type") == "domain" and not any(
+                t.lower().rstrip("/").endswith(sfx) for sfx in CA_DOMAIN_SUFFIXES):
+            drop.append({**e, "reason": "non_ca_tld"})
+        else:
+            keep.append(e)
+    return keep, drop
+
+
 def to_label(v: Verdict, *, prompt_refs: list[str], model: str) -> Label:
     """[MUST] topic_key 留 NULL —— llm_v2 只管相关性,主题是 llm_v3 的事。
 

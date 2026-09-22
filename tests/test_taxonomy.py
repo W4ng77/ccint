@@ -40,3 +40,25 @@ def test_low_information_config_preserved():
     hist = yaml.safe_load(
         open("src/ccint/labelers/lexicons_v2/topics.yaml.frozen", encoding="utf-8"))
     assert hist["low_information"] == taxonomy.low_information()
+
+
+def test_validate_entities_drops_hallucinations_and_foreign_domains():
+    """两条机械校验:原文里没有的实体、非加拿大顶级域的域名。"""
+    from ccint.labelers.llm_v2 import validate_entities
+    text = ("Cyberattaque dans l'Éducation nationale — see trustedsec.com "
+            "and cyber.gc.ca and ia.cr")
+    keep, drop = validate_entities(text, [
+        {"type": "place", "text": "Canada"},          # 原文没有 → 幻觉
+        {"type": "domain", "text": "trustedsec.com"},  # 非 .ca
+        {"type": "domain", "text": "ia.cr"},           # 哥斯达黎加
+        {"type": "domain", "text": "cyber.gc.ca"},     # 保留
+    ])
+    assert [e["text"] for e in keep] == ["cyber.gc.ca"]
+    assert {e["reason"] for e in drop} == {"not_in_text", "non_ca_tld"}
+
+
+def test_validate_entities_is_case_insensitive_but_requires_presence():
+    from ccint.labelers.llm_v2 import validate_entities
+    keep, drop = validate_entities("The RCMP said so", [
+        {"type": "gov", "text": "rcmp"}])
+    assert len(keep) == 1 and not drop
