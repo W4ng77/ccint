@@ -10,3 +10,7 @@ logs/
 
 # 门户/采集器的本地运行产物
 *.log
+
+# 含 handle 与正文的评测集不进仓 —— 见 eval/README.md
+eval/canada_screen.tsv
+eval/canada_screen_audit.tsv
