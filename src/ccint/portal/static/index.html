@@ -79,7 +79,30 @@
 </header>
 
 <main>
+  <section>
+    <h2>Sources</h2>
+    <p class="cap">Select which configured sources to include. Everything below
+       is recomputed for the selection.</p>
+    <div class="panel"><div id="srcpick" class="controls"></div></div>
+  </section>
+
   <section id="tiles-sec"><div class="tiles" id="tiles"></div></section>
+
+  <section id="ask-sec">
+    <h2>Ask the agent</h2>
+    <p class="cap">The agent answers only from the database, by calling the same
+       analysis functions this page uses. Its tool calls are shown with the answer.</p>
+    <div class="controls" id="demoq"></div>
+    <div class="panel">
+      <div style="display:flex;gap:8px">
+        <input id="q" placeholder="e.g. Is ransomware activity mostly organic or feed-driven?"
+               style="flex:1;font:inherit;padding:7px 10px;border-radius:6px;
+                      border:1px solid var(--line);background:var(--surface);color:var(--ink)">
+        <button id="askbtn" style="background:var(--s1);border-color:var(--s1);color:#fff">Ask</button>
+      </div>
+      <div id="answer" style="margin-top:12px"></div>
+    </div>
+  </section>
 
   <section>
     <h2>Latest topics</h2>
@@ -87,6 +110,12 @@
     <div class="note" id="recent-note"></div>
     <div class="controls" id="win"></div>
     <div class="panel"><div id="recent"></div></div>
+  </section>
+
+  <section id="detail-sec" style="display:none">
+    <h2 id="detail-h">Topic detail</h2>
+    <p class="cap" id="detail-cap"></p>
+    <div class="panel"><div id="detail"></div></div>
   </section>
 
   <section>
@@ -128,6 +157,8 @@ const fmt = n => (n ?? 0).toLocaleString("en");
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c =>
   ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 let WINDOW = 14;
+let SRC = [];          // 空 = 全部源
+const srcq = () => SRC.length ? `&sources=${encodeURIComponent(SRC.join(','))}` : "";
 
 async function get(u){ const r = await fetch(u); if(!r.ok) throw new Error(u); return r.json(); }
 function showTip(e, html){ tt.innerHTML = html; tt.style.opacity = 1;
@@ -178,7 +209,7 @@ async function recent(){
   });
   $("#recent").querySelectorAll("tr[data-topic]").forEach(tr => {
     tr.style.cursor = "pointer";
-    tr.onclick = () => posts(tr.dataset.topic);
+    tr.onclick = () => topicDetail(tr.dataset.topic);
   });
 }
 
@@ -271,6 +302,135 @@ async function posts(topic){
   renderPosts(d.posts, topic ? `Topic: ${topic}` : null);
 }
 
+/* ---------- source selector ---------- */
+async function srcPicker(){
+  const d = await get("/api/sources");
+  const all = d.sources.filter(s => s.posts > 0 || s.enabled);
+  $("#srcpick").innerHTML =
+    `<button data-all="1" aria-pressed="${SRC.length===0}">all sources</button>` +
+    all.map(s => `<button data-src="${esc(s.key)}" aria-pressed="${SRC.includes(s.key)}">
+        ${esc(s.key)} <span style="opacity:.65">${fmt(s.posts)}</span></button>`).join("");
+  $("#srcpick").querySelectorAll("button").forEach(b => b.onclick = async () => {
+    if(b.dataset.all){ SRC = []; }
+    else {
+      const k = b.dataset.src;
+      SRC = SRC.includes(k) ? SRC.filter(x => x !== k) : [...SRC, k];
+    }
+    await srcPicker(); await refresh();
+  });
+}
+
+/* ---------- topic detail ---------- */
+function seriesChart(rows, keys, labels, colors){
+  const W = 760, H = 180, PL = 42, PR = 12, PT = 10, PB = 24;
+  if(!rows.length) return `<p class="cap">No data in this window.</p>`;
+  const max = Math.max(1, ...rows.flatMap(r => keys.map(k => r[k] || 0)));
+  const x = i => PL + i * (W - PL - PR) / Math.max(1, rows.length - 1);
+  const y = v => H - PB - (H - PT - PB) * v / max;
+  const ticks = [0, Math.round(max/2), max].filter((v,i,a) => a.indexOf(v)===i);
+  const paths = keys.map((k, ki) => {
+    const dpath = rows.map((r,i) => `${i?"L":"M"}${x(i).toFixed(1)},${y(r[k]||0).toFixed(1)}`).join("");
+    return `<path d="${dpath}" fill="none" stroke="${colors[ki]}" stroke-width="2"
+             stroke-linejoin="round" stroke-linecap="round"></path>`;
+  }).join("");
+  const hot = rows.map((r,i) => `<rect x="${(x(i)-6).toFixed(1)}" y="${PT}"
+      width="12" height="${H-PT-PB}" fill="transparent"
+      data-tip="${esc(r.day)}<br>${keys.map((k,ki)=>
+        `<span style=&quot;color:${colors[ki]}&quot;>&#9632;</span> ${labels[ki]}: <b>${r[k]||0}</b>`).join("<br>")}"></rect>`).join("");
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}">
+      ${ticks.map(t => `<g><line x1="${PL}" x2="${W-PR}" y1="${y(t)}" y2="${y(t)}"
+          stroke="var(--grid)" stroke-width="1"></line>
+        <text x="${PL-6}" y="${y(t)+4}" text-anchor="end" font-size="10"
+          fill="var(--muted)">${t}</text></g>`).join("")}
+      <text x="${PL}" y="${H-6}" font-size="10" fill="var(--muted)">${esc(rows[0].day)}</text>
+      <text x="${W-PR}" y="${H-6}" text-anchor="end" font-size="10"
+        fill="var(--muted)">${esc(rows[rows.length-1].day)}</text>
+      ${paths}${hot}</svg>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:6px;font-size:12px;color:var(--ink2)">
+      ${keys.map((k,i)=>`<span><span style="color:${colors[i]}">&#9632;</span> ${labels[i]}</span>`).join("")}
+    </div>`;
+}
+
+async function topicDetail(topic){
+  $("#detail-sec").style.display = "";
+  $("#detail-h").textContent = `Topic detail — ${topic}`;
+  $("#detail").innerHTML = `<p class="cap">loading…</p>`;
+  $("#detail-sec").scrollIntoView({behavior:"smooth", block:"start"});
+  const d = await get(`/api/topics/${encodeURIComponent(topic)}?days=${WINDOW}${srcq()}`);
+  const a = d.actor_composition, ts = d.timeseries;
+  $("#detail-cap").textContent =
+    `Last ${d.window_days} days · sources: ${Array.isArray(d.sources)?d.sources.join(", "):d.sources}`;
+  const C = ["var(--s1)","var(--s2)","var(--s3)"];
+  $("#detail").innerHTML = `
+    <div class="tiles" style="margin-bottom:14px">
+      ${[["Posts", fmt(a.posts)], ["Unique authors", fmt(a.authors)],
+         ["From feed-like accounts", `${(a.broadcast_post_share*100).toFixed(1)}%`],
+         ["Feed accounts", `${fmt(a.broadcast_authors)} / ${fmt(a.authors)}`]]
+        .map(([k,v]) => `<div class="tile"><div class="n">${v}</div><div class="k">${k}</div></div>`).join("")}
+    </div>
+    <div class="note">${esc(a.reading)} — ${esc(a.method)}</div>
+
+    <h3 style="font-size:13px;margin:16px 0 4px">Activity over time</h3>
+    <p class="cap">${esc(ts.series_note)}</p>
+    ${seriesChart(ts.series, ["posts","non_broadcast_posts","authors"],
+                  ["all posts","non-broadcast posts","unique authors"], C)}
+
+    <h3 style="font-size:13px;margin:18px 0 6px">By source</h3>
+    <table><thead><tr><th>Source</th><th class="num">Posts</th>
+      <th class="num">Authors</th></tr></thead><tbody>${
+      d.by_source.map(r=>`<tr><td class="mono">${esc(r.source_key)}</td>
+        <td class="num">${fmt(r.posts)}</td><td class="num">${fmt(r.authors)}</td></tr>`).join("")
+      || `<tr><td colspan="3" class="cap">none</td></tr>`}</tbody></table>
+
+    <h3 style="font-size:13px;margin:18px 0 6px">Entities</h3>
+    <div class="snip">${d.entities.length ? d.entities.map(e =>
+        `<span class="badge" style="color:var(--ink2);margin:0 5px 5px 0">${esc(e.entity_type)}: ${esc(e.entity_text)} (${e.posts})</span>`).join("")
+      : "none extracted in this window"}</div>
+
+    <h3 style="font-size:13px;margin:18px 0 6px">Related vulnerabilities</h3>
+    ${d.related_cves.length ? `<table><thead><tr><th>CVE</th><th class="num">Posts</th>
+      <th>Exploited</th><th>CVSS</th></tr></thead><tbody>${
+      d.related_cves.map(c=>`<tr><td class="mono"><a href="#" data-cve="${esc(c.cve_id)}">${esc(c.cve_id)}</a></td>
+        <td class="num">${fmt(c.posts)}</td>
+        <td>${c.known_exploited?`<span class="badge kev">&#9888; CISA KEV</span>`:`<span class="sev">—</span>`}</td>
+        <td class="sev">${c.cvss_score!=null?`${c.cvss_score} ${esc(c.cvss_severity||"")}`:"not enriched"}</td>
+      </tr>`).join("")}</tbody></table>` : `<p class="cap">No CVE identifiers in this topic and window.</p>`}
+
+    <h3 style="font-size:13px;margin:18px 0 6px">Representative posts</h3>
+    <p class="cap">${esc(d.representative_posts.selection || "")}</p>
+    <table><thead><tr><th>When</th><th>Author</th><th>Post</th><th class="num">Eng.</th>
+      <th>CVEs</th></tr></thead><tbody>${
+      (d.representative_posts.posts||[]).map(p=>`<tr>
+        <td class="sev">${esc(String(p.published_at).slice(0,10))}</td>
+        <td class="mono">${esc(p.author_handle||"—")}</td>
+        <td><div class="snip">${esc((p.text||"").slice(0,240))}</div>
+            ${p.url?`<a href="${esc(p.url)}" target="_blank" rel="noopener">open</a>`:""}</td>
+        <td class="num">${fmt(p.engagement)}</td>
+        <td class="mono">${(p.cves||[]).join("<br>")||"—"}</td></tr>`).join("")
+      || `<tr><td colspan="5" class="cap">none</td></tr>`}</tbody></table>`;
+  $("#detail").querySelectorAll("[data-tip]").forEach(el => {
+    el.onmousemove = e => showTip(e, el.dataset.tip); el.onmouseleave = hideTip; });
+  $("#detail").querySelectorAll("[data-cve]").forEach(a2 => {
+    a2.onclick = async e => { e.preventDefault(); await cvePosts(a2.dataset.cve); }; });
+}
+
+/* ---------- ask agent ---------- */
+async function askAgent(q){
+  $("#answer").innerHTML = `<p class="cap">The agent is calling analysis tools…</p>`;
+  let d;
+  try { d = await get(`/api/agent/ask?q=${encodeURIComponent(q)}`); }
+  catch(e){ $("#answer").innerHTML = `<p class="err">agent unavailable: ${esc(e.message)}</p>`; return; }
+  const calls = (d.tool_calls||[]).map(c =>
+    `<span class="badge" style="color:${c.ok?"var(--ink2)":"var(--critical)"};margin:0 5px 5px 0">
+       ${esc(c.tool)}${c.ms!=null?` ${c.ms}ms`:""}</span>`).join("");
+  $("#answer").innerHTML =
+    `<div style="white-space:pre-wrap;line-height:1.6">${esc(d.answer)}</div>
+     ${d.error?`<p class="err" style="margin-top:8px">${esc(d.error)}</p>`:""}
+     <div class="cap" style="margin-top:10px">evidence path — ${d.turns} turn(s),
+       model <span class="mono">${esc(d.model)}</span></div>
+     <div>${calls||`<span class="cap">no tools were called</span>`}</div>`;
+}
+
 /* ---------- sources + health ---------- */
 async function sources(){
   const d = await get("/api/sources");
@@ -302,15 +462,26 @@ function windows(){
   $("#win").innerHTML = [7,14,30].map(n =>
     `<button data-w="${n}" aria-pressed="${n===WINDOW}">last ${n} days</button>`).join("");
   $("#win").querySelectorAll("button").forEach(b => b.onclick = async () => {
-    WINDOW = +b.dataset.w; windows();
-    await Promise.all([recent(), cves(), posts(), sources()]);
+    WINDOW = +b.dataset.w; windows(); await refresh();
   });
+}
+
+async function refresh(){
+  await Promise.all([overview(), recent(), timeseries(), cves(), posts(), sources()]);
 }
 
 (async function main(){
   windows();
   try{
-    await Promise.all([overview(), recent(), timeseries(), cves(), posts(), sources()]);
+    const dq = await get("/api/demo-queries");
+    $("#demoq").innerHTML = dq.queries.map(x =>
+      `<button data-q="${esc(x)}">${esc(x.length>52?x.slice(0,52)+"…":x)}</button>`).join("");
+    $("#demoq").querySelectorAll("button").forEach(b =>
+      b.onclick = () => { $("#q").value = b.dataset.q; askAgent(b.dataset.q); });
+    $("#askbtn").onclick = () => { const v = $("#q").value.trim(); if(v) askAgent(v); };
+    $("#q").onkeydown = e => { if(e.key === "Enter"){ const v = e.target.value.trim(); if(v) askAgent(v); } };
+    await srcPicker();
+    await refresh();
     $("#foot").innerHTML =
       "Read-only demonstration portal. Counts are conditioned on the relevance and topic " +
       "annotator versions named above; both are versioned and every model-produced label " +

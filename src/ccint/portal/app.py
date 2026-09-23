@@ -18,6 +18,7 @@ from fastapi import FastAPI, Query
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
+from ..agent import assistant, toolset
 from . import queries as q
 
 STATIC = pathlib.Path(__file__).resolve().parent / "static"
@@ -80,6 +81,57 @@ def api_cve_posts(cve_id: str, limit: int = Query(30, ge=1, le=200)):
 @app.get("/api/health")
 def api_health(days: int = Query(14, ge=1, le=90)):
     return {"runs": q.collection_health(days=days)}
+
+
+# ---- agent 工具直通:门户与 agent 共用同一组函数,不各写一套查询 ----
+
+@app.get("/api/topics/{topic}")
+def api_topic_detail(topic: str, days: int = Query(14, ge=1, le=90),
+                     sources: str | None = None):
+    return toolset.inspect_topic(topic, days=days, sources=_srcs(sources))
+
+
+@app.get("/api/topics/{topic}/timeseries")
+def api_topic_timeseries(topic: str, days: int = Query(30, ge=7, le=365),
+                         sources: str | None = None):
+    return toolset.get_topic_timeseries(topic, days=days, sources=_srcs(sources))
+
+
+@app.get("/api/topics/{topic}/actors")
+def api_topic_actors(topic: str, days: int = Query(14, ge=1, le=90)):
+    return toolset.get_actor_composition(topic, days=days)
+
+
+@app.get("/api/latest-topics")
+def api_latest_topics(days: int = Query(14, ge=1, le=90),
+                      sources: str | None = None, top_k: int = Query(12, ge=1, le=50)):
+    return toolset.get_latest_topics(days=days, sources=_srcs(sources), top_k=top_k)
+
+
+@app.get("/api/agent/ask")
+def api_agent_ask(q_: str = Query(..., alias="q", min_length=3, max_length=500)):
+    """[MUST] GET 且只读 —— agent 能调用的工具里没有写路径。"""
+    return assistant.ask(q_).to_dict()
+
+
+@app.get("/api/agent/tools")
+def api_agent_tools():
+    return {"tools": [t["function"] for t in assistant._tool_schemas()]}
+
+
+@app.get("/api/demo-queries")
+def api_demo_queries():
+    return {"queries": [
+        "What cybersecurity topics have been active in the last two weeks?",
+        "Is ransomware activity mostly organic or feed-driven?",
+        "Which CVEs are being discussed most recently?",
+        "Show me recent posts about exploited vulnerabilities.",
+        "Which sources are we collecting from, and are they healthy?",
+    ]}
+
+
+def _srcs(v: str | None) -> list[str] | None:
+    return [x for x in v.split(",") if x] if v else None
 
 
 @app.get("/")

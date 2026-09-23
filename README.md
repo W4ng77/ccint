@@ -790,3 +790,115 @@ composite trend score；事件中心分析；多窗口尺度；本地 LLM 推理
 Kubernetes；ORM；异步框架；用户鉴权。
 
 v0 也不使用 GPU：规则标注器不需要模型，agent 走 API，无任何 CUDA 依赖。
+
+---
+
+## 15. Agent 层与演示门户
+
+系统现在有一个工具调用型 agent 和一个只读 Web 门户。两者都**不含新的分析逻辑**
+—— agent 只决定调用哪个工具,工具只转发到既有模块。把分析搬进 prompt 会让同一个
+问题两次问走出不同口径,而既有代码是确定性的、单独可测的。
+
+### 架构
+
+```
+                        USER
+                          |
+                   Agent (assistant.py)
+                          |  tool calls
+        +-----------------+-----------------+
+        |                 |                 |
+   collection         analytics           OSINT
+   tools              tools               tools
+   (sources/web)      (broadcast/topic)   (cve/registry)
+        |                 |                 |
+        +--------- PostgreSQL --------------+
+                          |
+                   Portal (FastAPI)
+```
+
+agent 是编排层。采集、标注、统计、CVE 富化仍然是确定性的、可单独测试的后端组件。
+
+### 十个工具
+
+| 工具 | 转发到 |
+|---|---|
+| `list_sources` / `collect_sources` | `collectors.sources` · `collectors.web` · `ingest` |
+| `get_latest_topics` / `get_topic_timeseries` | `portal.queries` + `analytics.broadcast` |
+| `inspect_topic` / `get_representative_posts` | `agent.tools.TopicTools`(签名未改) |
+| `get_actor_composition` | `analytics.broadcast.detect_broadcast_authors` |
+| `get_related_cves` / `lookup_cve` | `osint.cve` · `cve_records` |
+| `search_external_intelligence` | `external_events` 登记表 |
+
+### 四条护栏
+
+这些写在 system prompt 里,并由 `tests/test_agent_toolset.py` 断言:
+
+1. **发帖量不等于公众关注。** 实测 3% 的账号产出 24.3% 的语料。报告任何主题活动
+   时必须同时给出 feed 账号占比。
+2. **本语料不代表加拿大公众意见。** 措辞用「被监测源上观察到的活动」。
+3. **涨跌不是 trend。** 置换检验已证明当前样本量上无可检出变化;工具返回的是
+   中性标签(`most_discussed` / `increasing_activity` / `decreasing_activity` /
+   `newly_observed`)。
+4. **每条断言可追溯**到源、窗口、计数、工具结果。
+
+另外:NVD 的 CVSS(理论严重性)与 CISA KEV(已观察到被利用)始终分开呈现,不合成
+单一风险分。
+
+### 跑起来
+
+```bash
+# 1. 本地模型(agent 需要 tool calling)
+vllm serve Qwen/Qwen3-4B-Instruct-2507 --served-model-name user --port 8000 \
+     --enable-auto-tool-choice --tool-call-parser hermes
+
+# 2. 门户
+.venv/bin/python -m uvicorn ccint.portal.app:app --host 127.0.0.1 --port 8800 --app-dir src
+#    → http://127.0.0.1:8800
+```
+
+### 配置要采集哪些论坛
+
+编辑 `config/sources.yaml`,然后:
+
+```bash
+ccint collect sources          # 列出已配置的源
+ccint collect web --since 14d  # 采集全部 enabled 的 rss / discourse 源
+```
+
+每个源必须写 `authorised` 字段说明依据什么认为可以自动访问 —— 缺了 loader 直接
+报错。采集器会先读 robots.txt,读不到就拒绝采集:一个被 ban 的源会产生采集缺口,
+而缺口在时间序列上与「讨论减少」不可区分。
+
+**演示时不需要改 YAML** —— 门户顶部的源选择器按已配置的源过滤全部视图。
+
+### 演示流程
+
+1. 在门户顶部选择要看的源(Bluesky / RSS / Discourse)
+2. 「Sources」一节显示每个源的采集状态与健康度
+3. 「Latest topics」显示近 14 天排名,可切 7/14/30 天
+4. 点任意主题 → 主题详情:三条曲线(全部帖 / 非广播帖 / 独立作者)、按源拆分、
+   feed 占比、代表帖、实体、关联 CVE
+5. 「Ask the agent」输入问题,例如:
+   - *Is ransomware activity mostly organic or feed-driven?*
+   - *Which CVEs are being discussed most recently?*
+
+   回答下方列出它实际调用了哪些工具、各耗时多少 —— 证据路径是可见的。
+
+### API
+
+| 端点 | 说明 |
+|---|---|
+| `GET /api/overview` | 语料概览 |
+| `GET /api/sources` | 已配置源 + 采集状态 |
+| `GET /api/latest-topics?days=14&sources=a,b` | 近 N 天主题排名 |
+| `GET /api/topics/{topic}?days=14` | 主题详情(完整画像) |
+| `GET /api/topics/{topic}/timeseries?days=30` | 三条序列 |
+| `GET /api/topics/{topic}/actors?days=14` | 作者构成 |
+| `GET /api/cves?days=14` | CVE 排名 + NVD/KEV |
+| `GET /api/agent/ask?q=...` | agent 问答 |
+| `GET /api/agent/tools` | 工具清单 |
+
+**门户全部是 GET,没有写路径**,并由测试强制。从界面触发采集会在
+`collection_runs` 里产生没有对应计划的运行,而那张表的价值就是让「这天量少」
+可归因。

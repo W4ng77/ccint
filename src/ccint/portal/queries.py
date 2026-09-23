@@ -11,7 +11,7 @@ import datetime as dt
 from .. import db
 
 LABEL_VERSION = "llm_v2c"       # 当前判定门
-TOPIC_VERSION = "llm_v1"        # 当前主题标注
+TOPIC_VERSION = "topic_v2"       # 当前主题标注(覆盖 llm_v2c 的 relevant 集)
 
 
 def _rows(sql: str, **p) -> list[dict]:
@@ -62,7 +62,7 @@ def sources() -> list[dict]:
 def topics_over_time(days: int = 60, relevant_only: bool = True) -> dict:
     """主题 × 日期。返回长表,前端做小倍数。"""
     rows = _rows("""
-        SELECT coalesce(t.topic_key, 'other') AS topic,
+        SELECT CASE WHEN t.post_id IS NULL THEN '(unlabelled)' ELSE coalesce(t.topic_key,'other') END AS topic,
                p.published_at::date AS day,
                count(*) AS posts
         FROM posts p
@@ -84,7 +84,7 @@ def recent_topics(days: int = 14) -> dict:
     「↑ 56%」会直接制造出统计上不存在的结论。
     """
     cur = _rows("""
-        SELECT coalesce(t.topic_key,'other') AS topic, count(*) AS posts,
+        SELECT CASE WHEN t.post_id IS NULL THEN '(unlabelled)' ELSE coalesce(t.topic_key,'other') END AS topic, count(*) AS posts,
                count(DISTINCT p.author_id) AS authors
         FROM posts p
         JOIN post_labels t ON t.post_id=p.post_id AND t.label_version=%(tv)s
@@ -92,7 +92,7 @@ def recent_topics(days: int = 14) -> dict:
         WHERE g.is_relevant AND p.published_at >= now() - make_interval(days => %(d)s)
         GROUP BY 1""", tv=TOPIC_VERSION, gv=LABEL_VERSION, d=days)
     prev = _rows("""
-        SELECT coalesce(t.topic_key,'other') AS topic, count(*) AS posts
+        SELECT CASE WHEN t.post_id IS NULL THEN '(unlabelled)' ELSE coalesce(t.topic_key,'other') END AS topic, count(*) AS posts
         FROM posts p
         JOIN post_labels t ON t.post_id=p.post_id AND t.label_version=%(tv)s
         JOIN post_labels g ON g.post_id=p.post_id AND g.label_version=%(gv)s
@@ -115,7 +115,7 @@ def recent_posts(days: int = 14, topic: str | None = None,
     return _rows("""
         SELECT p.post_id, p.source_key, p.author_handle, p.published_at, p.url,
                left(p.text, 320) AS text,
-               coalesce(t.topic_key,'other') AS topic,
+               CASE WHEN t.post_id IS NULL THEN '(unlabelled)' ELSE coalesce(t.topic_key,'other') END AS topic,
                coalesce(array_agg(DISTINCT c.cve_id)
                         FILTER (WHERE c.cve_id IS NOT NULL), '{}') AS cves
         FROM posts p
@@ -124,7 +124,7 @@ def recent_posts(days: int = 14, topic: str | None = None,
         LEFT JOIN post_cves c ON c.post_id = p.post_id
         WHERE g.is_relevant
           AND p.published_at >= now() - make_interval(days => %(d)s)
-          AND (%(topic)s::text IS NULL OR coalesce(t.topic_key,'other') = %(topic)s::text)
+          AND (%(topic)s::text IS NULL OR CASE WHEN t.post_id IS NULL THEN '(unlabelled)' ELSE coalesce(t.topic_key,'other') END = %(topic)s::text)
         GROUP BY p.post_id, t.topic_key
         ORDER BY p.published_at DESC LIMIT %(lim)s""",
         gv=LABEL_VERSION, tv=TOPIC_VERSION, d=days, topic=topic, lim=limit)
