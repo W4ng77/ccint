@@ -1,6 +1,7 @@
 """ccint CLI（typer）。"""
 from __future__ import annotations
 
+import re
 import logging
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -22,6 +23,10 @@ def _parse_when(s: str) -> datetime:
     """接受 'now' / 'YYYY-MM-DD' / ISO8601。[MUST] 一律返回 tz-aware UTC。"""
     if s.lower() == "now":
         return datetime.now(timezone.utc)
+    if (m := re.fullmatch(r"(\d+)([dh])", s.strip().lower())):
+        n, unit = int(m.group(1)), m.group(2)
+        delta = timedelta(days=n) if unit == "d" else timedelta(hours=n)
+        return datetime.now(timezone.utc) - delta
     raw = s.strip().replace("Z", "+00:00")
     dt = datetime.fromisoformat(raw)
     if dt.tzinfo is None:
@@ -114,6 +119,57 @@ def collect_incremental(
         res = run_collection(c, mode="incremental", since=s, until=u,
                              max_pages_per_term=max_pages)
     typer.echo(str(res))
+
+
+@collect_app.command("sources")
+def collect_sources_list():
+    """列出 config/sources.yaml 里配置的论坛/站点。"""
+    from .collectors import sources as srcs
+
+    version, specs = srcs.load()
+    typer.echo(f"sources_version = {version}")
+    for s in specs:
+        flag = "on " if s.enabled else "off"
+        typer.echo(f"  [{flag}] {s.key:22} {s.kind:10} "
+                   f"{s.url or s.base_url or '-'}")
+        typer.echo(f"         authorised: {s.authorised}")
+
+
+@collect_app.command("web")
+def collect_web(
+    source: str = typer.Option(None, "--source",
+                               help="sources.yaml 里的 key；省略则跑全部 enabled 的 web 源"),
+    since: str = typer.Option("7d", "--since", help="例如 7d / 2026-09-01"),
+    until: str = typer.Option("now", "--until"),
+    max_pages: int = typer.Option(10, "--max-pages"),
+):
+    """采集用户配置的论坛 / RSS 源（kind = rss | discourse）。
+
+    [MUST] 每个源采完写各自的 collection_runs —— 多源之后，「哪个源那天没数据」
+    必须能单独归因，否则一个源挂掉会在合并后的时间序列上表现为「讨论减少」。
+    """
+    from .collectors import sources as srcs
+    from .collectors import web
+    from .ingest import reap_stale_runs, run_collection
+
+    reap_stale_runs()
+    version, specs = srcs.load()
+    pick = [s for s in specs if s.enabled and s.kind in {"rss", "discourse"}
+            and (source is None or s.key == source)]
+    if not pick:
+        raise typer.BadParameter(
+            f"没有匹配的 web 源。可用：{[s.key for s in specs if s.kind != 'bluesky']}")
+    s_dt, u_dt = _parse_when(since), _parse_when(until)
+    for spec in pick:
+        typer.echo(f"── {spec.key} ({spec.kind}) ──")
+        try:
+            with web.build(spec, query_version=version) as c:
+                res = run_collection(c, mode="incremental", since=s_dt, until=u_dt,
+                                     max_pages_per_term=max_pages)
+            typer.echo(f"   {res}")
+        except PermissionError as e:
+            # robots 拒绝不是异常情况，是预期结果之一，要显式报告而不是静默跳过
+            typer.echo(f"   SKIPPED: {e}")
 
 
 # ---------------------------------------------------------------- label

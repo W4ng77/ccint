@@ -7,3 +7,6 @@ __pycache__/
 reports/
 .bsky_session.json
 logs/
+
+# 门户/采集器的本地运行产物
+*.log

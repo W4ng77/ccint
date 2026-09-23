@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en" data-palette="#2a78d6,#eb6834,#1baf7a">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ccint portal</title>
+<style>
+  :root{
+    --surface:#fcfcfb; --panel:#ffffff; --ink:#0b0b0b; --ink2:#52514e;
+    --muted:#8a8880; --grid:#e4e3df; --line:#d9d8d3;
+    --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a;
+    --critical:#d03b3b; --warning:#fab219; --good:#0ca30c;
+    /* sequential: single hue, light -> dark */
+    --q1:#cde2fb; --q2:#9ec5f4; --q3:#6da7ec; --q4:#3987e5; --q5:#256abf;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --surface:#14161a; --panel:#1b1e24; --ink:#f2f3f5; --ink2:#b9bcc2;
+      --muted:#8b9097; --grid:#2b2f36; --line:#333842;
+      --s1:#6ea8ef; --s2:#f2905f; --s3:#4fc99b;
+      --critical:#f0736f; --warning:#f5c451; --good:#5cc95c;
+      --q1:#1d2a3d; --q2:#254063; --q3:#2f5a90; --q4:#3d7cc4; --q5:#6ea8ef;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--surface);color:var(--ink);
+       font:14px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+  header{padding:22px 16px 10px;max-width:1180px;margin:0 auto}
+  h1{font-size:20px;margin:0 0 3px;letter-spacing:-.01em}
+  .sub{color:var(--ink2);font-size:13px}
+  main{max-width:1180px;margin:0 auto;padding:0 16px 56px}
+  section{margin-top:26px}
+  h2{font-size:15px;margin:0 0 3px;letter-spacing:-.01em}
+  .cap{color:var(--muted);font-size:12px;margin:0 0 12px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;
+         padding:14px}
+  .tiles{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(148px,1fr))}
+  .tile{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+  .tile .n{font-size:24px;font-weight:650;letter-spacing:-.02em}
+  .tile .k{color:var(--ink2);font-size:12px;margin-top:2px}
+  .tile .x{color:var(--muted);font-size:11px;margin-top:5px}
+  .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+  button{font:inherit;font-size:13px;padding:5px 11px;border-radius:999px;cursor:pointer;
+         border:1px solid var(--line);background:var(--panel);color:var(--ink2)}
+  button[aria-pressed="true"]{background:var(--s1);border-color:var(--s1);color:#fff}
+  .sm{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 11px}
+  .card h3{margin:0;font-size:12.5px;font-weight:600}
+  .card .m{color:var(--muted);font-size:11px;margin:1px 0 6px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;font-weight:600;color:var(--ink2);font-size:11.5px;
+     text-transform:uppercase;letter-spacing:.04em;padding:0 8px 7px;
+     border-bottom:1px solid var(--line)}
+  td{padding:8px;border-bottom:1px solid var(--grid);vertical-align:top}
+  tbody tr:hover{background:color-mix(in srgb,var(--s1) 6%,transparent)}
+  .num{text-align:right;font-variant-numeric:tabular-nums}
+  .badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;
+         padding:1px 7px;border-radius:999px;border:1px solid currentColor;
+         font-weight:600;white-space:nowrap}
+  .kev{color:var(--critical)}
+  .sev{color:var(--ink2);font-variant-numeric:tabular-nums}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px}
+  a{color:var(--s1)}
+  .snip{color:var(--ink2);font-size:12.5px}
+  .tt{position:fixed;pointer-events:none;background:var(--panel);color:var(--ink);
+      border:1px solid var(--line);border-radius:6px;padding:6px 9px;font-size:12px;
+      box-shadow:0 4px 14px rgba(0,0,0,.14);opacity:0;transition:opacity .09s;z-index:9}
+  .note{border-left:3px solid var(--s2);background:color-mix(in srgb,var(--s2) 7%,transparent);
+        padding:9px 12px;border-radius:0 6px 6px 0;font-size:12.5px;color:var(--ink2);
+        margin-bottom:12px}
+  .err{color:var(--critical)}
+  footer{max-width:1180px;margin:0 auto;padding:0 16px 40px;color:var(--muted);font-size:12px}
+</style>
+</head>
+<body>
+<header>
+  <h1>ccint — cybersecurity discussion monitor</h1>
+  <div class="sub" id="sub">loading…</div>
+</header>
+
+<main>
+  <section id="tiles-sec"><div class="tiles" id="tiles"></div></section>
+
+  <section>
+    <h2>Latest topics</h2>
+    <p class="cap" id="recent-cap"></p>
+    <div class="note" id="recent-note"></div>
+    <div class="controls" id="win"></div>
+    <div class="panel"><div id="recent"></div></div>
+  </section>
+
+  <section>
+    <h2>Topics over time</h2>
+    <p class="cap" id="ts-cap"></p>
+    <div class="sm" id="ts"></div>
+  </section>
+
+  <section>
+    <h2>Vulnerabilities under discussion</h2>
+    <p class="cap" id="cve-cap"></p>
+    <div class="note" id="cve-note"></div>
+    <div class="panel"><div id="cves"></div></div>
+  </section>
+
+  <section>
+    <h2>Recent posts</h2>
+    <p class="cap">Most recent relevant posts. Click a CVE to see everything that mentions it.</p>
+    <div class="panel"><div id="posts"></div></div>
+  </section>
+
+  <section>
+    <h2>Sources and collection health</h2>
+    <p class="cap">Which forums are being read, and whether collection is working —
+       shown beside the content because a drop in volume must be attributable to
+       one or the other.</p>
+    <div class="panel"><div id="sources"></div></div>
+    <div class="panel" style="margin-top:10px"><div id="health"></div></div>
+  </section>
+</main>
+
+<footer id="foot"></footer>
+<div class="tt" id="tt"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const tt = $("#tt");
+const fmt = n => (n ?? 0).toLocaleString("en");
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c =>
+  ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let WINDOW = 14;
+
+async function get(u){ const r = await fetch(u); if(!r.ok) throw new Error(u); return r.json(); }
+function showTip(e, html){ tt.innerHTML = html; tt.style.opacity = 1;
+  const p = 14; tt.style.left = Math.min(e.clientX + p, innerWidth - tt.offsetWidth - 8) + "px";
+  tt.style.top  = Math.min(e.clientY + p, innerHeight - tt.offsetHeight - 8) + "px"; }
+function hideTip(){ tt.style.opacity = 0; }
+
+/* ---------- overview ---------- */
+async function overview(){
+  const d = await get("/api/overview");
+  $("#sub").textContent =
+    `${d.first_day} → ${d.last_day} · ${d.sources} source(s) · relevance ${d.label_version} · generated ${d.as_of}`;
+  $("#tiles").innerHTML = [
+    ["Posts collected", fmt(d.posts), "everything retrieved, before any judgement"],
+    ["Judged relevant", fmt(d.relevant), `${(100*d.relevant/d.posts).toFixed(2)}% of the corpus`],
+    ["Distinct authors", fmt(d.authors), "across all sources"],
+    ["CVEs mentioned", fmt(d.cves), `${fmt(d.kev)} are in CISA KEV`],
+  ].map(([k,n,x]) => `<div class="tile"><div class="n">${n}</div>
+      <div class="k">${k}</div><div class="x">${x}</div></div>`).join("");
+}
+
+/* ---------- latest topics: ranked bars, single hue ---------- */
+async function recent(){
+  const d = await get(`/api/topics/recent?days=${WINDOW}`);
+  $("#recent-cap").textContent =
+    `Relevant posts by topic in the last ${d.window_days} days, with the change against the preceding ${d.window_days} days.`;
+  $("#recent-note").textContent = d.caveat;
+  const rows = d.topics;
+  if(!rows.length){ $("#recent").innerHTML = `<p class="cap">No labelled posts in this window.</p>`; return; }
+  const max = Math.max(...rows.map(r => r.posts));
+  $("#recent").innerHTML = `<table><thead><tr>
+      <th>Topic</th><th style="width:44%">Posts</th><th class="num">Posts</th>
+      <th class="num">Authors</th><th class="num">Change</th></tr></thead><tbody>` +
+    rows.map(r => {
+      const w = Math.max(2, 100 * r.posts / max);
+      const sign = r.delta > 0 ? "+" : "";
+      return `<tr data-topic="${esc(r.topic)}">
+        <td class="mono">${esc(r.topic)}</td>
+        <td><div class="bar" style="height:11px;width:${w}%;background:var(--s1);
+             border-radius:0 4px 4px 0"
+             data-tip="${esc(r.topic)}: ${r.posts} posts · ${r.authors} authors"></div></td>
+        <td class="num">${fmt(r.posts)}</td>
+        <td class="num">${fmt(r.authors)}</td>
+        <td class="num" style="color:var(--ink2)">${sign}${r.delta}</td></tr>`;
+    }).join("") + "</tbody></table>";
+  $("#recent").querySelectorAll("[data-tip]").forEach(el => {
+    el.onmousemove = e => showTip(e, el.dataset.tip); el.onmouseleave = hideTip;
+  });
+  $("#recent").querySelectorAll("tr[data-topic]").forEach(tr => {
+    tr.style.cursor = "pointer";
+    tr.onclick = () => posts(tr.dataset.topic);
+  });
+}
+
+/* ---------- topics over time: small multiples ---------- */
+async function timeseries(){
+  const d = await get("/api/topics/timeseries?days=60");
+  $("#ts-cap").textContent =
+    `Daily relevant posts per topic, ${d.days} days. One panel per topic on a shared vertical scale — ` +
+    `eleven topics exceed the number of categorical colours that survive colour-vision checks, so they are separated rather than coloured.`;
+  const byTopic = {}, days = new Set();
+  d.series.forEach(r => { (byTopic[r.topic] ??= {})[r.day] = r.posts; days.add(r.day); });
+  const D = [...days].sort();
+  if(!D.length){ $("#ts").innerHTML = `<p class="cap">No data.</p>`; return; }
+  const max = Math.max(1, ...d.series.map(r => r.posts));
+  const order = Object.keys(byTopic).sort((a,b) =>
+    Object.values(byTopic[b]).reduce((s,v)=>s+v,0) - Object.values(byTopic[a]).reduce((s,v)=>s+v,0));
+  const W = 210, H = 54, PAD = 3;
+  $("#ts").innerHTML = order.map(t => {
+    const vals = D.map(dd => byTopic[t][dd] || 0);
+    const total = vals.reduce((s,v)=>s+v,0);
+    const x = i => PAD + i * (W - 2*PAD) / Math.max(1, D.length - 1);
+    const y = v => H - PAD - (H - 2*PAD) * v / max;
+    const line = vals.map((v,i) => `${i?"L":"M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join("");
+    const area = `${line}L${x(D.length-1).toFixed(1)},${H-PAD}L${x(0).toFixed(1)},${H-PAD}Z`;
+    const dots = vals.map((v,i) => v ? `<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="7"
+        fill="transparent" data-tip="${esc(t)} · ${D[i]} · ${v} post${v==1?"":"s"}"></circle>` : "").join("");
+    return `<div class="card"><h3 class="mono">${esc(t)}</h3>
+      <div class="m">${fmt(total)} posts · peak ${Math.max(...vals)}/day</div>
+      <svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img"
+           aria-label="${esc(t)}: ${total} posts over ${D.length} days">
+        <path d="${area}" fill="var(--q1)"></path>
+        <path d="${line}" fill="none" stroke="var(--s1)" stroke-width="2"
+              stroke-linejoin="round" stroke-linecap="round"></path>
+        ${dots}
+      </svg></div>`;
+  }).join("");
+  $("#ts").querySelectorAll("[data-tip]").forEach(el => {
+    el.onmousemove = e => showTip(e, el.dataset.tip); el.onmouseleave = hideTip;
+  });
+}
+
+/* ---------- CVEs ---------- */
+async function cves(){
+  const d = await get(`/api/cves?days=${WINDOW}&limit=25`);
+  $("#cve-cap").textContent =
+    `CVE identifiers appearing in posts over the last ${d.window_days} days, enriched from NVD and CISA KEV.`;
+  $("#cve-note").textContent = d.note;
+  if(!d.cves.length){ $("#cves").innerHTML = `<p class="cap">No CVEs in this window.</p>`; return; }
+  $("#cves").innerHTML = `<table><thead><tr>
+      <th>CVE</th><th class="num">Posts</th><th>Exploited</th><th>CVSS</th>
+      <th>Description</th></tr></thead><tbody>` +
+    d.cves.map(c => `<tr>
+      <td class="mono"><a href="#" data-cve="${esc(c.cve_id)}">${esc(c.cve_id)}</a></td>
+      <td class="num">${fmt(c.posts)}</td>
+      <td>${c.known_exploited
+            ? `<span class="badge kev">&#9888; CISA KEV${c.kev_date_added ? " " + c.kev_date_added : ""}</span>`
+            : `<span class="sev">—</span>`}</td>
+      <td class="sev">${c.cvss_score != null
+            ? `${c.cvss_score.toFixed(1)} <span style="color:var(--muted)">${esc(c.cvss_severity||"")} v${esc(c.cvss_version||"")}</span>`
+            : (c.enrichment === "unresolved" ? "not in NVD" : "not yet enriched")}</td>
+      <td class="snip">${esc((c.description||"").slice(0,150))}</td></tr>`).join("") +
+    "</tbody></table>";
+  $("#cves").querySelectorAll("[data-cve]").forEach(a => {
+    a.onclick = async e => { e.preventDefault(); await cvePosts(a.dataset.cve); };
+  });
+}
+
+async function cvePosts(id){
+  const d = await get(`/api/cves/${encodeURIComponent(id)}/posts?limit=30`);
+  renderPosts(d.posts, `Posts mentioning ${id}`);
+  $("#posts").scrollIntoView({behavior:"smooth", block:"start"});
+}
+
+/* ---------- posts ---------- */
+function renderPosts(rows, title){
+  $("#posts").innerHTML = (title ? `<p class="cap">${esc(title)} — ${rows.length} shown</p>` : "") +
+    (rows.length ? `<table><thead><tr><th>When</th><th>Source</th><th>Post</th>
+       <th>CVEs</th></tr></thead><tbody>` +
+      rows.map(p => `<tr>
+        <td class="sev">${esc(String(p.published_at).slice(0,16).replace("T"," "))}</td>
+        <td class="mono">${esc(p.source_key)}</td>
+        <td><div class="snip">${esc(p.text)}</div>
+            ${p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener">open</a>` : ""}</td>
+        <td class="mono">${(p.cves||[]).map(c=>esc(c)).join("<br>") || "—"}</td></tr>`).join("") +
+      "</tbody></table>" : `<p class="cap">Nothing to show.</p>`);
+}
+async function posts(topic){
+  const u = `/api/posts/recent?days=${WINDOW}&limit=40` + (topic ? `&topic=${encodeURIComponent(topic)}` : "");
+  const d = await get(u);
+  renderPosts(d.posts, topic ? `Topic: ${topic}` : null);
+}
+
+/* ---------- sources + health ---------- */
+async function sources(){
+  const d = await get("/api/sources");
+  $("#sources").innerHTML = `<table><thead><tr><th>Source</th><th>Kind</th>
+      <th class="num">Posts</th><th class="num">Relevant</th><th>Window</th>
+      <th>Basis for automated access</th></tr></thead><tbody>` +
+    d.sources.map(s => `<tr>
+      <td class="mono">${esc(s.key)}${s.enabled?"":' <span class="sev">(off)</span>'}</td>
+      <td class="sev">${esc(s.kind)}</td>
+      <td class="num">${fmt(s.posts)}</td>
+      <td class="num">${fmt(s.relevant)}</td>
+      <td class="sev">${s.first_day ? esc(s.first_day)+" → "+esc(s.last_day) : "—"}</td>
+      <td class="snip">${esc(s.authorised || "—")}</td></tr>`).join("") + "</tbody></table>";
+  const h = await get(`/api/health?days=${WINDOW}`);
+  $("#health").innerHTML = h.runs.length ? `<table><thead><tr><th>Source</th><th>Mode</th>
+      <th>Status</th><th class="num">Runs</th><th class="num">Inserted</th>
+      <th>Last run</th></tr></thead><tbody>` +
+    h.runs.map(r => `<tr><td class="mono">${esc(r.source_key)}</td>
+      <td class="sev">${esc(r.mode)}</td>
+      <td>${r.status==="success" ? `<span class="badge" style="color:var(--good)">&#10003; success</span>`
+          : `<span class="badge" style="color:var(--warning)">&#9888; ${esc(r.status)}</span>`}</td>
+      <td class="num">${fmt(r.runs)}</td><td class="num">${fmt(r.inserted)}</td>
+      <td class="sev">${esc(String(r.last_run||"").slice(0,16).replace("T"," "))}</td></tr>`).join("")
+    + "</tbody></table>" : `<p class="cap">No collection runs in this window.</p>`;
+}
+
+/* ---------- window control ---------- */
+function windows(){
+  $("#win").innerHTML = [7,14,30].map(n =>
+    `<button data-w="${n}" aria-pressed="${n===WINDOW}">last ${n} days</button>`).join("");
+  $("#win").querySelectorAll("button").forEach(b => b.onclick = async () => {
+    WINDOW = +b.dataset.w; windows();
+    await Promise.all([recent(), cves(), posts(), sources()]);
+  });
+}
+
+(async function main(){
+  windows();
+  try{
+    await Promise.all([overview(), recent(), timeseries(), cves(), posts(), sources()]);
+    $("#foot").innerHTML =
+      "Read-only demonstration portal. Counts are conditioned on the relevance and topic " +
+      "annotator versions named above; both are versioned and every model-produced label " +
+      "carries the digest of the prompt that produced it. Differences between windows are " +
+      "descriptive — permutation testing on this corpus found no topic change " +
+      "distinguishable from noise.";
+  }catch(e){
+    $("#sub").innerHTML = `<span class="err">failed to load: ${esc(e.message)}</span>`;
+  }
+})();
+</script>
+</body>
+</html>

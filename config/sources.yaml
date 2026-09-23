@@ -1,0 +1,43 @@
+# sources.yaml — 用户指定要采集哪些论坛/站点。
+#
+# [MUST] 改动本文件 = 改变采集边界 → 必须递增 version。整个项目最核心的一条
+# 教训就是采集边界如果不可追溯,后续任何「趋势」都无法与「搜索条件变化」区分。
+#
+# [MUST] 每个源必须显式写 `authorised`。自动抓取第三方论坛涉及该站的服务条款
+# 与 robots.txt;这个字段强迫添加源的人先确认过,而不是让采集器默默去抓。
+# 采集器会检查 robots.txt,但 robots 允许不等于条款允许。
+#
+# kind 目前支持:
+#   bluesky    AT Protocol 搜索(需凭据)
+#   rss        任意 RSS/Atom feed —— 多数论坛和安全博客都提供
+#   discourse  Discourse 论坛的公开 JSON API(/latest.json)
+version: sources_v1
+
+sources:
+  - key: bluesky
+    kind: bluesky
+    enabled: true
+    authorised: "public API, research use permitted by ToS"
+    notes: 现有主源,34 个安全词的搜索流
+
+  - key: bleepingcomputer
+    kind: rss
+    enabled: true
+    url: https://www.bleepingcomputer.com/feed/
+    authorised: "public RSS feed published for syndication"
+    rate_limit_s: 2.0
+
+  - key: cisa_advisories
+    kind: rss
+    enabled: true
+    url: https://www.cisa.gov/cybersecurity-advisories/all.xml
+    authorised: "US government public feed"
+    rate_limit_s: 2.0
+
+  # 模板:加一个 Discourse 论坛。取消注释并填 base_url 即可。
+  # - key: example_forum
+  #   kind: discourse
+  #   enabled: false
+  #   base_url: https://forum.example.org
+  #   authorised: "<确认该站条款允许自动访问后填写理由>"
+  #   rate_limit_s: 3.0
