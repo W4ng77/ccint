@@ -57,12 +57,11 @@ def load_units(runs: list[int]) -> tuple[list[dict], dict]:
                    p.raw_payload->'record'->'reply'->'root'->>'uri' AS root_uri,
                    coalesce((p.raw_payload->>'replyCount')::int,0) + coalesce((p.raw_payload->>'quoteCount')::int,0)
                    + coalesce((p.raw_payload->>'repostCount')::int,0) + coalesce((p.raw_payload->>'likeCount')::int,0) AS eng,
-                   coalesce(t.topic_key, r2.topic_key, 'unknown') AS topic,
+                   coalesce(t.topic_key, CASE WHEN t.post_id IS NULL THEN 'no_topic_v2_row' ELSE 'unassigned' END) AS topic,
                    coalesce(a.actor_type, 'no_profile') AS actor_type,
                    EXISTS (SELECT 1 FROM post_cves pc WHERE pc.post_id = p.post_id) AS has_cve
             FROM posts p
             LEFT JOIN post_labels t ON t.post_id = p.post_id AND t.label_version = 'topic_v2'
-            LEFT JOIN post_labels r2 ON r2.post_id = p.post_id AND r2.label_version = 'rules_v2'
             LEFT JOIN author_profiles a ON a.author_id = p.author_id AND a.profile_version = 'actor_v1'
             WHERE p.post_id = ANY(%s)""", (list(seeds),))}
         known_text = {r["uri"]: r["text"] for r in c.execute(

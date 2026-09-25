@@ -34,3 +34,13 @@
   详见 `NEIGHBORHOOD_DRY_RUN.md`。
 - collector 升级为 `neighborhood_v1.1`：`duplicate_items` 改为跨页累计。
 - **停在试点评审前。** 完整的 2,631 个种子采集**尚未开始**。
+- **20:22–20:45** 完整邻域采集：run 475（`purpose = full`），collector 为 `neighborhood_v1.1`，commit 为 `20af490`。
+  共 2,631 个种子，7,896 次请求，用时 23.9 分钟。结局为成功 2,593 / partial 36 / 不可得 2 / 失败 0，重试 2 次，429 限流 0 次。
+  随后派生出 5,988 条边（`edges_v1`）。
+- 运行描述性分析（`scripts/interaction_descriptive.py`），结果见 `RESULTS.md`。
+  修正了一处口径问题：初版在 `topic_v2` 缺值时会用 `rules_v2` 的 topic 回填，属于混用两套版本；
+  改为只用 `topic_v2`，缺值记为 `unassigned`，然后重跑。
+- 抽取人工标注样本（`scripts/build_annotation_sample.py`，随机种子 20260926）：
+  共 500 个单元，其中信度子集 150 个；`annotation_items.csv` 的 sha256 为
+  `8b76d29c32f305383b71b3fdc25dfad3f7347d749d4b2abec10ca5931d4a49c8`。
+- **停在人工标注之前。**

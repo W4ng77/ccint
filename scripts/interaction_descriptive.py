@@ -10,6 +10,8 @@
 - observed = 线程与引用两个 endpoint 均为 success/partial(与试点报告一致)。
 - CSR 分子:深度 ≤ 2 有回复或有引用;不计转发(SPEC §12)。深度 1 为空 ⟹ 深度 2 必为空,
   故 d=1 与 d=2 的 CSR 相同,深度敏感性体现在回复量与参与者上。
+- topic 只用 `topic_v2`:NULL 记 `unassigned`,无 topic_v2 行(rules_v2 独有种子)记 `no_topic_v2_row`;
+  不用 rules_v2 的 topic 回填 —— 两套 topic 词表不同,混用会把版本差异当成 topic 差异。
 - 参与者 = 回复作者 ∪ 引用作者 ∪ 转发者;种子作者单列。
 """
 from __future__ import annotations
@@ -77,13 +79,12 @@ def load():
             SELECT p.post_id, p.author_id, p.published_at,
                    (p.raw_payload->>'replyCount')::int AS rc0,
                    (p.raw_payload->>'quoteCount')::int AS qc0, p.author_handle,
-                   coalesce(t.topic_key, r2.topic_key, 'unknown') AS topic,
+                   coalesce(t.topic_key, CASE WHEN t.post_id IS NULL THEN 'no_topic_v2_row' ELSE 'unassigned' END) AS topic,
                    coalesce(a.actor_type, 'no_profile') AS actor_type,
                    coalesce(a.function, 'no_profile') AS actor_function,
                    EXISTS (SELECT 1 FROM post_cves pc WHERE pc.post_id = p.post_id) AS has_cve
             FROM posts p
             LEFT JOIN post_labels t ON t.post_id = p.post_id AND t.label_version = 'topic_v2'
-            LEFT JOIN post_labels r2 ON r2.post_id = p.post_id AND r2.label_version = 'rules_v2'
             LEFT JOIN author_profiles a ON a.author_id = p.author_id AND a.profile_version = 'actor_v1'
             WHERE p.post_id = ANY(%s)""", (list(seeds),))}
         thread_counts = {r["seed_post_id"]: r for r in c.execute("""
