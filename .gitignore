@@ -14,3 +14,6 @@ logs/
 # 含 handle 与正文的评测集不进仓 —— 见 eval/README.md
 eval/canada_screen.tsv
 eval/canada_screen_audit.tsv
+
+# interaction 实验的生成产物(冻结清单在 manifests/,要进仓)
+outputs/

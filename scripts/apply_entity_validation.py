@@ -18,6 +18,14 @@ ap.add_argument("--src", default="llm_v2b")
 ap.add_argument("--dst", default="llm_v2c")
 a = ap.parse_args()
 
+
+def _chain(mt: dict) -> list[str]:
+    """源标签已有的派生链(不含源版本本身)。"""
+    if mt.get("derived_chain"):
+        return list(mt["derived_chain"])
+    return [mt["derived_from"]] if mt.get("derived_from") else []
+
+
 with db.connect(autocommit=True) as c:
     rows = [dict(r) for r in c.execute("""
         select l.post_id, l.is_cyber, l.matched_terms, p.text
@@ -43,9 +51,13 @@ with db.connect(autocommit=False) as conn, conn.cursor() as cur:
                     "is_cyber": r["is_cyber"], "is_canada": bool(keep),
                     "is_relevant": now, "topic_key": None,
                     "is_low_information": False,
+                    # 源本身若已是派生版本,保留整条链与先前丢弃的实体,
+                    # 否则 prompt/model 溯源(挂在链首版本上)就断了
                     "matched_terms": Jsonb({**mt, "canada_entities": keep,
-                                            "dropped_entities": drop,
+                                            "dropped_entities":
+                                                (mt.get("dropped_entities") or []) + drop,
                                             "derived_from": a.src,
+                                            "derived_chain": _chain(mt) + [a.src],
                                             "validation": "mechanical_v1"}),
                     "confidence": None})
         if len(buf) >= 2000:

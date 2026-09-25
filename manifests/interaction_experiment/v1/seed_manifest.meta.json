@@ -1,0 +1,24 @@
+{
+  "frozen_at": "2026-09-25T19:29:25.184685+00:00",
+  "git_commit": "4e9cc3f1882ca556d00cd7e70f739a1c9313b648",
+  "source": "bluesky",
+  "primary_label_version": "llm_v2c",
+  "sensitivity_label_version": "rules_v2",
+  "created_at_semantics": "posts.published_at (UTC; createdAt corrected by indexedAt per migration 002)",
+  "annotation_run_id_semantics": "<provenance label_version>@<label_provenance.recorded_at>; no annotation-run table exists, this is a batch identifier",
+  "n_rows": 2631,
+  "n_primary": 2493,
+  "n_sensitivity": 650,
+  "n_both": 512,
+  "provenance_status": {
+    "derived_validated": 2348,
+    "direct_unvalidated_pass": 105,
+    "direct_unvalidated_fail": 40,
+    "deterministic_rules": 138
+  },
+  "window": [
+    "2026-08-22T00:21:26.861000+00:00",
+    "2026-09-23T02:23:29.109510+00:00"
+  ],
+  "sha256": "358fe62447c439e7ef30f49e44543756436d6a807cdfc9ccdde337cb294d83d1"
+}
