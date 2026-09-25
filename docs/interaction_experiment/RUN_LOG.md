@@ -22,3 +22,15 @@
 
 - **v2 被指定为当前生效的冻结清单。** 用 `ccint.interaction.manifest.load("v2")` 直接从文件核对：
   main 2,453 / legacy 2,493 / rules 650 / collect 2,631，与规格一致；sha256 与 meta 一致；没有重复 URI。
+- **19:4x** 提交 `9b6f8cc`：包括两版清单、`llm_v2d` 的派生代码、各份审计文档和规格。工作分支为 `interaction-experiment`，没有推送。
+- **19:50** 应用 migration `009_interaction_layer.sql`，新建 `neighborhood_runs`、`interaction_snapshots`、
+  `interaction_seed_outcomes`、`interaction_edges` 四张表，`collection_runs.mode` 增加 `neighborhood`。
+  随后提交 `1b28262`，全部 275 个测试通过。
+- **19:52–19:54** 跑邻域试点（`scripts/interaction_pilot.py collect`），collector 为 `neighborhood_v1`：
+  - run 470 `pilot`：100 个种子，302 次请求，57.6 秒，结局为成功 96 / partial 3 / unavailable 1 / 失败 0；
+  - run 471 `pilot_repeat`：10 个种子，31 次请求；
+  - run 472 `pilot_pagination`：5 个种子，page_limit=2，191 次请求。
+
+  详见 `NEIGHBORHOOD_DRY_RUN.md`。
+- collector 升级为 `neighborhood_v1.1`：`duplicate_items` 改为跨页累计。
+- **停在试点评审前。** 完整的 2,631 个种子采集**尚未开始**。

@@ -31,7 +31,7 @@ from .manifest import Manifest
 
 log = logging.getLogger(__name__)
 
-COLLECTOR_VERSION = "neighborhood_v1"
+COLLECTOR_VERSION = "neighborhood_v1.1"   # v1.1: duplicate_items 跨页累计(v1 只计最后一页)
 EP_THREAD = "app.bsky.feed.getPostThread"
 EP_QUOTES = "app.bsky.feed.getQuotes"
 EP_REPOSTS = "app.bsky.feed.getRepostedBy"
@@ -190,7 +190,7 @@ class NeighborhoodCollector:
         # 2) 引用 / 3) 转发者:cursor 分页
         for ep, key, count_key in ((EP_QUOTES, "posts", "quoteCount"),
                                    (EP_REPOSTS, "repostedBy", "repostCount")):
-            cursor, page, items, seen = None, 0, 0, set()
+            cursor, page, items, seen, dup = None, 0, 0, set(), 0
             while True:
                 page += 1
                 params = {"uri": uri, "limit": page_limit}
@@ -209,7 +209,7 @@ class NeighborhoodCollector:
                     break
                 batch = resp.data.get(key) or []
                 ids = [b.get("uri") or b.get("did") for b in batch]
-                dup = sum(1 for i in ids if i in seen)
+                dup += sum(1 for i in ids if i in seen)
                 seen.update(ids)
                 items += len(batch)
                 nxt = resp.data.get("cursor")
@@ -218,7 +218,7 @@ class NeighborhoodCollector:
                 snap(ep, params, resp, page, cursor, True, capped)
                 if not more or capped:
                     outcome(ep, "partial" if capped else "success", page, len(seen),
-                            {"cap_hit": capped, "duplicate_items": dup if page > 1 else 0})
+                            {"cap_hit": capped, "duplicate_items": dup})
                     break
                 cursor = nxt
         return out
