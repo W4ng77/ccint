@@ -133,14 +133,22 @@ def _parse(s: str | None):
 
 
 def enrich(*, api_key: str | None = None, limit: int | None = None,
-           sleep_s: float | None = None) -> dict:
-    """对 ``post_cves`` 里尚未富化的编号查 NVD。"""
+           sleep_s: float | None = None, ids: list[str] | None = None) -> dict:
+    """对 ``post_cves`` 里尚未富化的编号查 NVD。
+
+    ``ids`` 给定时按其顺序查询(调用方已排好优先级)。不给时只查库里完全没有记录
+    的编号 —— 注意 KEV 同步写入的 ``source='kev'`` 行因此不会被选中,要富化它们
+    必须显式传 ``ids``。
+    """
     gap = sleep_s if sleep_s is not None else (0.7 if api_key else 6.5)
-    with db.connect(autocommit=True) as c:
-        todo = [r["cve_id"] for r in c.execute("""
-            SELECT DISTINCT c.cve_id FROM post_cves c
-            WHERE NOT EXISTS (SELECT 1 FROM cve_records r WHERE r.cve_id = c.cve_id)
-            ORDER BY 1""")]
+    if ids is not None:
+        todo = list(ids)
+    else:
+        with db.connect(autocommit=True) as c:
+            todo = [r["cve_id"] for r in c.execute("""
+                SELECT DISTINCT c.cve_id FROM post_cves c
+                WHERE NOT EXISTS (SELECT 1 FROM cve_records r WHERE r.cve_id = c.cve_id)
+                ORDER BY 1""")]
     if limit:
         todo = todo[:limit]
     log.warning("NVD 富化 %d 个 CVE(间隔 %.1fs)", len(todo), gap)

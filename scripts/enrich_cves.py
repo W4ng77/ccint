@@ -32,4 +32,4 @@ with db.connect(autocommit=True) as c:
 todo = [r["cve_id"] for r in rows if r["cve_id"] not in have]
 print(f"候选 {len(rows)}，待富化 {len(todo)}", flush=True)
 if todo:
-    print(cve.enrich(api_key=a.api_key, limit=len(todo)), flush=True)
+    print(cve.enrich(api_key=a.api_key, ids=todo), flush=True)
