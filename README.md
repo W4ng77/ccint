@@ -902,3 +902,29 @@ ccint collect web --since 14d  # 采集全部 enabled 的 rss / discourse 源
 **门户全部是 GET,没有写路径**,并由测试强制。从界面触发采集会在
 `collection_runs` 里产生没有对应计划的运行,而那张表的价值就是让「这天量少」
 可归因。
+
+### 托管版门户:Signal Desk
+
+`src/ccint/portal/artifact/signal_desk.html` 是同一套门户的托管版,发布为 claude.ai
+artifact,演示时不需要本机起服务。它连不到本机数据库,读的是一份导出的快照:
+
+```bash
+.venv/bin/python scripts/export_portal_snapshot.py   # → outputs/portal_artifact/data.json
+```
+
+快照自带口径:判定门覆盖到哪天(`labelled_through`)、主题窗口、CVE 窗口。
+主题窗口取**最后 14 个已过判定门的日子**,之后采到的帖只计入原始采集量 ——
+未判定不等于不相关。CVE 面板用真实的最近 14 天,因为 CVE 抽取是正则,不依赖判定门。
+
+六个视图:近 14 天主题与帖子流、主题时间序列(小倍数)、CVE × NVD/KEV 与外部情报链接、
+ransomware.live 加拿大受害者 × 帖子匹配、数据源与采集健康(含新论坛提交队列)、
+基于快照的分析助手(工具调用 + 与 agent 层相同的口径护栏)。
+
+门户**不触发采集**。新论坛的提交只进入队列,经人工确认条款与 robots.txt 后写入
+`config/sources.yaml`(递增 version),由下一次 `ccint collect web` 采集。
+快照含帖子正文与 handle,不进仓(`outputs/` 已忽略)。
+
+## License
+
+MIT,见 [LICENSE](LICENSE)。代码开源;采集到的帖子内容不随仓库分发,
+评测集与实验清单只以标识符形式发布。

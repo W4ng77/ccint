@@ -17,3 +17,6 @@ eval/canada_screen_audit.tsv
 
 # interaction 实验的生成产物(冻结清单在 manifests/,要进仓)
 outputs/
+
+# 投稿计划不进公开仓
+WWW2027_PROPOSAL.md

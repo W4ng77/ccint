@@ -1,0 +1,724 @@
+<title>ccint Signal Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,500..800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+:root{
+  --ground:#f3f6f7; --surface:#ffffff; --sunken:#e9eef0; --ink:#13202a; --ink-2:#44545f; --muted:#6b7b86;
+  --rule:#d8e0e4; --accent:#0e6883; --accent-soft:#d4e8ef; --accent-ink:#ffffff;
+  --crit:#b8312f; --crit-soft:#f7dcdb; --high:#c05a12; --high-soft:#fae5d3; --med:#8a6a00; --med-soft:#f6ecc7;
+  --low:#51606b; --low-soft:#e5eaed; --ok:#1d7a4a; --ok-soft:#d8efe2; --hatch:#c9d3d8;
+  --shadow:0 1px 2px rgba(19,32,42,.06),0 4px 16px rgba(19,32,42,.05);
+  --f-display:"Archivo","Arial Narrow",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  color-scheme:dark;
+  --ground:#0d1418; --surface:#141e24; --sunken:#1b272e; --ink:#e5edf1; --ink-2:#b5c3cb; --muted:#8a9ba6;
+  --rule:#26343c; --accent:#52b4d3; --accent-soft:#16333f; --accent-ink:#06151b;
+  --crit:#f07370; --crit-soft:#3d1d1d; --high:#f0965a; --high-soft:#3b2616; --med:#e2c150; --med-soft:#352d12;
+  --low:#a3b2bb; --low-soft:#233038; --ok:#5cc98f; --ok-soft:#15301f; --hatch:#2c3a42;
+  --shadow:0 1px 2px rgba(0,0,0,.3);
+}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --ground:#0d1418; --surface:#141e24; --sunken:#1b272e; --ink:#e5edf1; --ink-2:#b5c3cb; --muted:#8a9ba6;
+  --rule:#26343c; --accent:#52b4d3; --accent-soft:#16333f; --accent-ink:#06151b;
+  --crit:#f07370; --crit-soft:#3d1d1d; --high:#f0965a; --high-soft:#3b2616; --med:#e2c150; --med-soft:#352d12;
+  --low:#a3b2bb; --low-soft:#233038; --ok:#5cc98f; --ok-soft:#15301f; --hatch:#2c3a42;
+  --shadow:0 1px 2px rgba(0,0,0,.3);
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--ground);color:var(--ink);font:15px/1.5 var(--f-body);padding-inline:16px;padding-block:0 48px}
+.wrap{max-width:1180px;margin:0 auto}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+.mono,.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.num{font-size:.92em}
+h1,h2,h3{font-family:var(--f-display);font-stretch:85%;text-wrap:balance;margin:0;letter-spacing:-.01em}
+h2{font-size:1.45rem;font-weight:700}
+h3{font-size:1.02rem;font-weight:650}
+.eyebrow{font:500 .72rem/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.muted{color:var(--muted)}
+.small{font-size:.85rem}
+
+/* header */
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--ground);margin-inline:-16px;padding-inline:16px;border-bottom:1px solid var(--rule)}
+.brandrow{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:8px 24px;padding-block:18px 10px}
+.brand{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.brand h1{font-size:1.9rem;font-weight:800;font-stretch:75%;letter-spacing:.005em;text-transform:uppercase}
+.brand h1 b{color:var(--accent);font-weight:800}
+.brand .sub{color:var(--ink-2);font-size:.9rem}
+.stamp{display:flex;gap:6px 16px;flex-wrap:wrap;font:400 .78rem/1.3 var(--f-mono);color:var(--muted)}
+.stamp span b{color:var(--ink);font-weight:500}
+nav.tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;margin-bottom:-1px}
+nav.tabs::-webkit-scrollbar{display:none}
+nav.tabs a{flex:none;padding:9px 14px 10px;text-decoration:none;color:var(--ink-2);font:600 .9rem var(--f-body);border-bottom:2px solid transparent;white-space:nowrap}
+nav.tabs a:hover{color:var(--ink)}
+nav.tabs a[aria-current="page"]{color:var(--accent);border-bottom-color:var(--accent)}
+main{padding-top:22px}
+section.view{display:grid;gap:22px}
+
+.panel{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:18px}
+.panel-h{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 16px;margin-bottom:12px}
+.caveat{font-size:.8rem;color:var(--muted);max-width:75ch;margin:10px 0 0}
+.notice{display:flex;gap:12px;align-items:flex-start;background:var(--accent-soft);border-radius:8px;padding:12px 14px;font-size:.88rem;color:var(--ink)}
+.notice .tag{flex:none;font:600 .7rem/1.6 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+
+/* KPI strip */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:8px;overflow:hidden}
+.kpi{background:var(--surface);padding:14px 16px;display:grid;gap:4px;align-content:start}
+.kpi .v{font:600 1.7rem/1.1 var(--f-mono);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.kpi .l{font-size:.82rem;color:var(--ink-2)}
+.kpi .d{font:400 .74rem var(--f-mono);color:var(--muted)}
+
+/* grids */
+.split{display:grid;grid-template-columns:minmax(0,6fr) minmax(0,6fr);gap:22px;align-items:start}
+@media (max-width:900px){.split{grid-template-columns:1fr}}
+
+/* tables */
+.tscroll{overflow-x:auto;margin-inline:-4px;padding-inline:4px}
+table{border-collapse:collapse;width:100%;font-size:.88rem}
+th{font:500 .7rem var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;padding:6px 8px;border-bottom:1px solid var(--rule);white-space:nowrap}
+td{padding:8px;border-bottom:1px solid var(--rule);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+td.r,th.r{text-align:right}
+tbody tr.click{cursor:pointer}
+tbody tr.click:hover{background:var(--sunken)}
+tbody tr.sel{background:var(--accent-soft)}
+.bar{height:8px;border-radius:0 4px 4px 0;background:var(--accent);min-width:2px}
+.barcell{width:26%;min-width:60px}
+#topicTable td:first-child{white-space:nowrap}
+
+/* chips */
+.chip{display:inline-flex;align-items:center;gap:4px;font:500 .72rem/1 var(--f-mono);padding:4px 7px;border-radius:4px;background:var(--sunken);color:var(--ink-2);white-space:nowrap;border:0}
+button.chip{cursor:pointer}
+button.chip:hover{background:var(--accent-soft);color:var(--accent)}
+.chip.topic{background:transparent;border:1px solid var(--rule)}
+.chip.kev{background:var(--crit-soft);color:var(--crit);font-weight:600}
+.sev-CRITICAL{background:var(--crit-soft);color:var(--crit)}
+.sev-HIGH{background:var(--high-soft);color:var(--high)}
+.sev-MEDIUM{background:var(--med-soft);color:var(--med)}
+.sev-LOW,.sev-NONE{background:var(--low-soft);color:var(--low)}
+.chip.ok{background:var(--ok-soft);color:var(--ok)}
+.chip.warn{background:var(--med-soft);color:var(--med)}
+.chip.bad{background:var(--crit-soft);color:var(--crit)}
+
+/* controls */
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+input[type=search],input[type=text],input[type=url],select,textarea{font:inherit;font-size:.9rem;color:var(--ink);background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:7px 10px;min-width:0}
+textarea{width:100%;resize:vertical}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:6px;overflow:hidden}
+.seg button{font:500 .8rem var(--f-body);border:0;background:var(--surface);color:var(--ink-2);padding:6px 11px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.btn{font:600 .88rem var(--f-body);border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);padding:8px 14px;border-radius:6px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn:disabled{opacity:.5;cursor:default}
+label.f{display:grid;gap:4px;font-size:.82rem;color:var(--ink-2);font-weight:500}
+
+/* posts */
+.feed{display:grid;gap:0}
+.post{padding:12px 0;border-bottom:1px solid var(--rule);display:grid;gap:6px}
+.post:last-child{border-bottom:0}
+.post .meta{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:.78rem;color:var(--muted)}
+.post .meta .who{color:var(--ink-2);font-weight:600}
+.post .txt{font-size:.9rem;overflow-wrap:anywhere;white-space:pre-line}
+.post .tags{display:flex;flex-wrap:wrap;gap:5px}
+.src{font:600 .66rem/1 var(--f-mono);letter-spacing:.05em;text-transform:uppercase;padding:3px 5px;border-radius:3px;background:var(--ink);color:var(--surface)}
+.more{margin-top:10px}
+
+/* charts */
+svg text{fill:var(--muted);font:10.5px var(--f-mono)}
+.grid line{stroke:var(--rule);stroke-width:1}
+.sm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px 22px}
+.sm{display:grid;gap:4px;cursor:pointer;border-radius:6px;padding:6px;margin:-6px}
+.sm:hover{background:var(--sunken)}
+.sm .h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.sm .h b{font:600 .88rem var(--f-body)}
+.sm .h span{font:.74rem var(--f-mono);color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.78rem;color:var(--ink-2);align-items:center}
+.sw{display:inline-block;width:12px;height:10px;border-radius:2px;vertical-align:-1px;margin-right:5px}
+#tip{position:fixed;z-index:50;pointer-events:none;background:var(--ink);color:var(--surface);font:.76rem/1.35 var(--f-mono);padding:6px 8px;border-radius:5px;max-width:260px;box-shadow:var(--shadow)}
+
+/* cve detail */
+.detail{position:sticky;top:120px}
+.links{display:flex;flex-wrap:wrap;gap:6px}
+.links a{font:500 .78rem var(--f-mono);text-decoration:none;border:1px solid var(--rule);padding:5px 8px;border-radius:5px;color:var(--accent)}
+.links a:hover{background:var(--accent-soft)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:.85rem}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0}
+
+/* ransomware */
+.ev{border-bottom:1px solid var(--rule);padding:10px 0}
+.ev:last-child{border-bottom:0}
+.ev summary{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;cursor:pointer;list-style:none}
+.ev summary::-webkit-details-marker{display:none}
+.ev summary .v{font-weight:600}
+.ev .posts{padding-left:14px;border-left:2px solid var(--rule);margin-top:8px}
+
+/* health strip */
+.strip{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(10px,1fr);gap:2px}
+.strip i{display:block;height:18px;border-radius:2px;background:var(--sunken)}
+.strip i.s{background:var(--ok)}
+.strip i.p{background:var(--med)}
+.strip i.f{background:var(--crit)}
+
+/* chat */
+.chat{display:grid;grid-template-rows:auto 1fr auto;gap:14px;min-height:520px}
+.msgs{display:grid;gap:14px;align-content:start}
+.msg{max-width:78ch;font-size:.92rem}
+.msg.u{justify-self:end;background:var(--accent-soft);padding:9px 13px;border-radius:10px 10px 2px 10px}
+.msg.a{padding:2px 0}
+.msg.a p{margin:0 0 .6em}
+.msg.a ul{margin:0 0 .6em;padding-left:1.2em}
+.msg.a code{font:.85em var(--f-mono);background:var(--sunken);padding:1px 4px;border-radius:3px}
+.msg .toolnote{font:.72rem var(--f-mono);color:var(--muted)}
+.composer{display:flex;gap:8px;align-items:flex-end}
+.composer textarea{min-height:44px;max-height:160px}
+.sugg{display:flex;flex-wrap:wrap;gap:6px}
+.sugg button{font:.82rem var(--f-body);border:1px solid var(--rule);background:var(--surface);color:var(--ink-2);border-radius:14px;padding:5px 11px;cursor:pointer;text-align:left}
+.sugg button:hover{border-color:var(--accent);color:var(--accent)}
+pre.yaml{font:.78rem/1.5 var(--f-mono);background:var(--sunken);padding:12px;border-radius:6px;overflow-x:auto;margin:0}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.formgrid .wide{grid-column:1/-1}
+@media (max-width:640px){.formgrid{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+<header class="top">
+  <div class="brandrow">
+    <div class="brand">
+      <h1>ccint <b>Signal&nbsp;Desk</b></h1>
+      <span class="sub">Canada × cybersecurity discussion, collected from forums, feeds and Bluesky</span>
+    </div>
+    <div class="stamp" id="stamp"><span>Loading snapshot…</span></div>
+  </div>
+  <nav class="tabs" aria-label="Views">
+    <a href="#latest" data-v="latest">Last 14 days</a>
+    <a href="#topics" data-v="topics">Topics over time</a>
+    <a href="#cves" data-v="cves">CVEs &amp; OSINT</a>
+    <a href="#ransomware" data-v="ransomware">Ransomware registry</a>
+    <a href="#sources" data-v="sources">Sources &amp; crawling</a>
+    <a href="#ask" data-v="ask">Ask the analyst</a>
+  </nav>
+</header>
+
+<main>
+<!-- LATEST -->
+<section class="view" id="v-latest">
+  <div class="notice" id="gapNotice"><span class="tag">Coverage</span><span id="gapText"></span></div>
+  <div class="kpis" id="kpis"></div>
+  <div class="split">
+    <div class="panel">
+      <div class="panel-h"><h2>Topics this fortnight</h2><span class="eyebrow" id="topicWinLbl"></span></div>
+      <div class="tscroll"><table id="topicTable"></table></div>
+      <p class="caveat">The change column compares with the 14 days before. It is descriptive. A permutation test on this corpus found no topic change that stands out from noise. "Feed share" is the fraction of posts from accounts profiled as automated incident feeds.</p>
+    </div>
+    <div class="panel">
+      <div class="panel-h">
+        <h2 id="feedTitle">Latest posts</h2>
+        <div class="controls">
+          <input type="search" id="postQ" placeholder="Search text, handle, CVE" aria-label="Search posts">
+          <button class="chip" id="clearTopic" hidden>clear topic ✕</button>
+        </div>
+      </div>
+      <div class="feed" id="feed"></div>
+      <button class="btn ghost more" id="feedMore" hidden>Show more</button>
+    </div>
+  </div>
+</section>
+
+<!-- TOPICS -->
+<section class="view" id="v-topics" hidden>
+  <div class="panel">
+    <div class="panel-h">
+      <div><h2>Relevant posts per day</h2><p class="muted small" style="margin:4px 0 0">Posts that passed the Canada × cyber relevance gate. Hatched days were collected but have not been through the gate yet.</p></div>
+      <div class="controls">
+        <div class="seg" role="group" aria-label="Smoothing"><button id="smRaw" aria-pressed="true">Daily</button><button id="sm7" aria-pressed="false">7-day mean</button></div>
+        <div class="seg" role="group" aria-label="Scale"><button id="scShared" aria-pressed="true">Shared scale</button><button id="scOwn" aria-pressed="false">Own scale</button></div>
+      </div>
+    </div>
+    <div id="totalChart"></div>
+  </div>
+  <div class="panel">
+    <div class="panel-h"><h2>By topic</h2><span class="eyebrow">click a topic to open its posts</span></div>
+    <div class="sm-grid" id="smGrid"></div>
+    <p class="caveat">Weekends carry about a third of weekday volume, so compare whole weeks. A spike from one topic is often a handful of feed accounts; check the author count in the tooltip before reading it as wider discussion.</p>
+  </div>
+  <div class="panel">
+    <div class="panel-h"><div><h2>Everything collected, per day</h2><p class="muted small" style="margin:4px 0 0">All posts the crawler stored, before any relevance filter. This is the denominator; a dip here is a collection gap, not a quieter week.</p></div><div class="legend" id="rawLegend"></div></div>
+    <div id="rawChart"></div>
+  </div>
+</section>
+
+<!-- CVES -->
+<section class="view" id="v-cves" hidden>
+  <div class="kpis" id="cveKpis"></div>
+  <div class="split" style="grid-template-columns:minmax(0,7fr) minmax(0,5fr)">
+    <div class="panel">
+      <div class="panel-h">
+        <div><h2>Most-discussed CVEs</h2><span class="eyebrow" id="cveWinLbl"></span></div>
+        <div class="controls">
+          <input type="search" id="cveQ" placeholder="CVE id or keyword" aria-label="Filter CVEs">
+          <label class="chip" style="cursor:pointer"><input type="checkbox" id="kevOnly" style="margin:0"> KEV only</label>
+        </div>
+      </div>
+      <div class="tscroll"><table id="cveTable"></table></div>
+      <p class="caveat">CVE ids are pulled from post text with a fixed pattern, so this table does not depend on any model. It covers all collected cyber posts, not only the Canada-relevant ones. CVSS is NVD's theoretical severity; KEV means CISA has seen the flaw exploited. The two are shown side by side and never merged into one score.</p>
+    </div>
+    <div class="panel detail" id="cveDetail"></div>
+  </div>
+</section>
+
+<!-- RANSOMWARE -->
+<section class="view" id="v-ransomware" hidden>
+  <div class="panel">
+    <div class="panel-h"><div><h2>Canadian ransomware victims × discussion</h2><p class="muted small" style="margin:4px 0 0" id="rwSub"></p></div>
+      <div class="controls"><div class="seg" role="group" aria-label="Filter"><button id="rwAll" aria-pressed="false">All victims</button><button id="rwMatched" aria-pressed="true">With posts</button></div></div>
+    </div>
+    <div id="rwList"></div>
+    <p class="caveat">Victims come from ransomware.live leak-site tracking. A post counts as matched when it names the victim organisation or its domain between 14 days before and 30 days after the listing. Common names (for example a national airline) can match unrelated posts; open the posts before citing a match.</p>
+  </div>
+</section>
+
+<!-- SOURCES -->
+<section class="view" id="v-sources" hidden>
+  <div class="panel">
+    <div class="panel-h"><h2>Forums and feeds being crawled</h2><span class="eyebrow" id="srcVer"></span></div>
+    <div class="tscroll"><table id="srcTable"></table></div>
+    <p class="caveat">Every source must state why automated access is allowed, and the crawler checks robots.txt before each run. A source that robots.txt refuses is skipped and logged, never fetched.</p>
+  </div>
+  <div class="panel">
+    <div class="panel-h"><div><h2>Collection health</h2><p class="muted small" style="margin:4px 0 0">One cell per day. A missing day is a crawler outage and shows up here before it looks like a quiet topic.</p></div>
+      <div class="legend"><span><i class="sw" style="background:var(--ok)"></i>all runs succeeded</span><span><i class="sw" style="background:var(--med)"></i>some runs failed</span><span><i class="sw" style="background:var(--crit)"></i>all failed</span><span><i class="sw" style="background:var(--sunken)"></i>no run</span></div></div>
+    <div id="health" style="display:grid;gap:10px"></div>
+  </div>
+  <div class="split">
+    <div class="panel">
+      <div class="panel-h"><h2>Add a forum to crawl</h2></div>
+      <form id="srcForm" class="formgrid" novalidate>
+        <label class="f">Name<input type="text" id="sf-name" placeholder="Canadian IT security forum" required></label>
+        <label class="f">Type
+          <select id="sf-kind"><option value="rss">RSS / Atom feed</option><option value="discourse">Discourse forum</option><option value="other">Other (needs a new collector)</option></select>
+        </label>
+        <label class="f wide">Address<input type="url" id="sf-url" placeholder="https://forum.example.ca/latest.rss" required></label>
+        <label class="f wide">Why automated access is allowed<textarea id="sf-auth" rows="2" placeholder="Public RSS published for syndication; ToS section 4 permits non-commercial research use" required></textarea></label>
+        <label class="f wide">Notes (optional)<input type="text" id="sf-notes" placeholder="Focus on the ransomware subforum"></label>
+        <div class="wide" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button class="btn" type="submit" id="sf-submit">Queue for crawling</button>
+          <span class="small muted" id="sf-status"></span>
+        </div>
+      </form>
+      <p class="caveat">Queued forums are reviewed, added to <span class="mono">config/sources.yaml</span> with a version bump, and picked up by the next <span class="mono">ccint collect web</span> run. Their posts appear here from the following snapshot.</p>
+    </div>
+    <div class="panel" style="display:grid;gap:14px">
+      <div>
+        <div class="panel-h" style="margin-bottom:8px"><h3>Config entry</h3><button class="chip" type="button" id="copyYaml">copy</button></div>
+        <pre class="yaml" id="yaml"></pre>
+      </div>
+      <div>
+        <h3 style="margin-bottom:6px">Crawl queue</h3>
+        <div id="queue" class="small muted">Loading queue…</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ASK -->
+<section class="view" id="v-ask" hidden>
+  <div class="panel chat">
+    <div>
+      <h2>Ask the analyst</h2>
+      <p class="muted small" style="margin:4px 0 10px;max-width:80ch">Claude answers from this snapshot only. It can search the posts, open topic time series and CVE records, and it is told to name the window, the counts and the source behind every claim. Answers use your own Claude usage.</p>
+      <div class="sugg" id="sugg"></div>
+    </div>
+    <div class="msgs" id="msgs" aria-live="polite"></div>
+    <div>
+      <div class="composer">
+        <textarea id="askBox" rows="1" placeholder="What changed in Canadian ransomware discussion this fortnight?" aria-label="Question"></textarea>
+        <button class="btn" id="askBtn">Ask</button>
+        <button class="btn ghost" id="stopBtn" hidden>Stop</button>
+      </div>
+      <p class="small muted" id="askNote" style="margin:6px 0 0"></p>
+    </div>
+  </div>
+</section>
+</main>
+</div>
+<div id="tip" hidden></div>
+
+<script>
+(() => {
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt = n => n == null ? "–" : Number(n).toLocaleString("en-CA");
+const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const dlab = d => { const [y,m,dd] = d.split("-"); return `${MON[+m-1]} ${+dd}`; };
+const addDays = (d, n) => { const t = new Date(d + "T00:00:00Z"); t.setUTCDate(t.getUTCDate() + n); return t.toISOString().slice(0,10); };
+const dayRange = (a, b) => { const out = []; for (let d = a; d <= b; d = addDays(d, 1)) out.push(d); return out; };
+const ago = ts => { const h = (Date.parse(D.meta.generated_at) - Date.parse(ts)) / 36e5; return h < 24 ? `${Math.max(1,Math.round(h))}h before snapshot` : dlab(ts.slice(0,10)); };
+const TNAME = {ransomware:"Ransomware",phishing_scam:"Phishing & scams",vulnerability_cve:"Vulnerabilities",data_breach:"Data breaches",malware_infostealer:"Malware & infostealers",fraud_financial:"Financial fraud",ddos_outage:"DDoS & outages",policy_regulation:"Policy & regulation",critical_infrastructure:"Critical infrastructure",gov_advisory:"Government advisories",other:"Other cyber"};
+const tname = k => TNAME[k] || k;
+const SRCNAME = {bluesky:"Bluesky",bleepingcomputer:"BleepingComputer",cisa_advisories:"CISA advisories"};
+const sname = k => SRCNAME[k] || k;
+let D = null;
+
+/* ---------- tooltip ---------- */
+const tip = $("#tip");
+function showTip(e, html){ tip.innerHTML = html; tip.hidden = false; const r = tip.getBoundingClientRect();
+  let x = e.clientX + 14, y = e.clientY + 14; if (x + r.width > innerWidth - 8) x = e.clientX - r.width - 14; if (y + r.height > innerHeight - 8) y = e.clientY - r.height - 14;
+  tip.style.left = x + "px"; tip.style.top = y + "px"; }
+const hideTip = () => tip.hidden = true;
+
+/* ---------- routing ---------- */
+const VIEWS = ["latest","topics","cves","ransomware","sources","ask"];
+function route(){ const v = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : "latest";
+  VIEWS.forEach(k => { $("#v-"+k).hidden = k !== v; });
+  document.querySelectorAll("nav.tabs a").forEach(a => a.setAttribute("aria-current", a.dataset.v === v ? "page" : "false"));
+  if (v === "topics" && D) drawTopics(); }
+addEventListener("hashchange", route);
+
+/* ---------- data ---------- */
+fetch("data.json").then(r => r.json()).then(d => { D = d; boot(); }).catch(() => { $("#stamp").innerHTML = "<span>Snapshot failed to load. Reload the page.</span>"; });
+
+let W, PW, CW, DAYS, LABDAYS, topicDaily, topicStats;
+function boot(){
+  const m = D.meta;
+  W = m.topic_window; PW = m.topic_prev_window; CW = m.cve_window;
+  DAYS = dayRange(m.first_day, m.collected_through);
+  LABDAYS = dayRange(m.first_day, m.labelled_through);
+  $("#stamp").innerHTML = `<span>collected through <b>${dlab(m.collected_through)}</b></span><span>gate-labelled through <b>${dlab(m.labelled_through)}</b></span><span>snapshot <b>${m.generated_at.slice(0,16).replace("T"," ")} UTC</b></span>`;
+  // per topic per day
+  topicDaily = {};
+  D.topic_daily.forEach(r => { (topicDaily[r.topic] ??= {})[r.day] = r; });
+  const inW = (d, w) => d >= w[0] && d <= w[1];
+  topicStats = Object.keys(topicDaily).map(t => {
+    let cur = 0, prev = 0;
+    for (const [d, r] of Object.entries(topicDaily[t])) { if (inW(d, W)) cur += r.posts; else if (inW(d, PW)) prev += r.posts; }
+    const authors = new Set(D.posts.filter(p => p.topic === t && inW(p.ts.slice(0,10), W)).map(p => p.handle)).size;
+    const fs = D.topic_feed_share[t] || [0, 0];
+    const conc = (D.topic_concentration[t] || [])[0];
+    return {t, cur, prev, authors, feed: fs[1] ? fs[0] / fs[1] : 0, top: conc};
+  }).sort((a, b) => b.cur - a.cur);
+  renderLatest(); renderCves(); renderRansomware(); renderSources(); setupAsk();
+  route();
+}
+
+/* ---------- LATEST ---------- */
+let selTopic = null, feedN = 25;
+function renderLatest(){
+  const m = D.meta;
+  const unl = D.daily.filter(r => r.day > m.labelled_through).reduce((s, r) => s + r.posts, 0);
+  $("#gapText").innerHTML = `Topic figures cover <b>${dlab(W[0])} – ${dlab(W[1])}</b>, the latest 14 days that have been through the relevance gate. ${fmt(unl)} posts collected ${dlab(addDays(m.labelled_through,1))} – ${dlab(m.collected_through)} are stored but not yet labelled, so they are left out rather than counted as irrelevant. The CVE view uses the true last 14 days, because CVE extraction needs no labelling.`;
+  const curPosts = topicStats.reduce((s, x) => s + x.cur, 0), prevPosts = topicStats.reduce((s, x) => s + x.prev, 0);
+  const wPosts = D.posts.filter(p => p.ts.slice(0,10) >= W[0] && p.ts.slice(0,10) <= W[1]);
+  const authors = new Set(wPosts.map(p => p.handle)).size;
+  const withCve = wPosts.filter(p => p.cves.length).length;
+  const collected = D.daily.filter(r => r.day >= W[0] && r.day <= W[1]).reduce((s, r) => s + r.posts, 0);
+  $("#kpis").innerHTML = [
+    [fmt(curPosts), "Canada-relevant cyber posts", `${fmt(prevPosts)} in the prior 14 days`],
+    [fmt(authors), "distinct authors", `${(curPosts/authors).toFixed(1)} posts per author`],
+    [fmt(collected), "posts crawled in the window", `${(100*curPosts/collected).toFixed(1)}% passed the gate`],
+    [fmt(withCve), "relevant posts naming a CVE", `${fmt(D.cve_totals.cves)} CVEs across all posts, last 14 days`],
+  ].map(([v,l,d]) => `<div class="kpi"><span class="v">${v}</span><span class="l">${l}</span><span class="d">${d}</span></div>`).join("");
+  $("#topicWinLbl").textContent = `${dlab(W[0])} – ${dlab(W[1])}`;
+  const max = Math.max(...topicStats.map(x => x.cur));
+  $("#topicTable").innerHTML = `<thead><tr><th>Topic</th><th class="r">Posts</th><th></th><th class="r">vs prior</th><th class="r">Authors</th><th class="r">Feed share</th></tr></thead><tbody>` +
+    topicStats.map(x => { const d = x.cur - x.prev;
+      return `<tr class="click${selTopic===x.t?" sel":""}" data-t="${esc(x.t)}" tabindex="0"><td><b style="font-weight:600">${esc(tname(x.t))}</b></td><td class="r num">${fmt(x.cur)}</td><td class="barcell"><div class="bar" style="width:${100*x.cur/max}%"></div></td><td class="r num muted">${d>0?"+":""}${d}</td><td class="r num">${x.authors}</td><td class="r num">${x.feed>=.5?`<span class="chip warn">${Math.round(100*x.feed)}%</span>`:Math.round(100*x.feed)+"%"}</td></tr>`; }).join("") + "</tbody>";
+  document.querySelectorAll("#topicTable tr.click").forEach(tr => { const f = () => { selTopic = selTopic === tr.dataset.t ? null : tr.dataset.t; feedN = 25; renderLatest(); };
+    tr.onclick = f; tr.onkeydown = e => { if (e.key === "Enter") f(); }; });
+  renderFeed();
+}
+function postHTML(p, opts = {}){
+  const cves = (p.cves || []).map(c => `<button class="chip" data-cve="${esc(c)}">${esc(c)}</button>`).join("");
+  const eng = (p.likes || p.reposts || p.replies) ? `<span>♥ ${p.likes||0} · ↻ ${p.reposts||0} · ↩ ${p.replies||0}</span>` : "";
+  const feed = p.actor === "incident_feed" ? `<span class="chip warn">incident feed</span>` : "";
+  return `<article class="post"><div class="meta"><span class="src">${esc(sname(p.src))}</span><span class="who">${esc(p.handle || "")}</span><span>${esc(p.ts.slice(0,16).replace("T"," "))} UTC</span>${eng}${feed}${p.url?`<a href="${esc(p.url)}" target="_blank" rel="noopener">open ↗</a>`:""}</div>
+    <div class="txt">${esc(p.text)}</div>${(!opts.noTags) ? `<div class="tags">${p.topic?`<span class="chip topic">${esc(tname(p.topic))}</span>`:""}${cves}</div>` : ""}</article>`;
+}
+function renderFeed(){
+  const q = $("#postQ").value.trim().toLowerCase();
+  let ps = D.posts.filter(p => p.ts.slice(0,10) >= W[0] && p.ts.slice(0,10) <= W[1]);
+  if (selTopic) ps = ps.filter(p => p.topic === selTopic);
+  if (q) ps = ps.filter(p => (p.text + " " + p.handle + " " + p.cves.join(" ")).toLowerCase().includes(q));
+  $("#feedTitle").textContent = selTopic ? `${tname(selTopic)} · ${fmt(ps.length)} posts` : `Latest posts · ${fmt(ps.length)}`;
+  $("#clearTopic").hidden = !selTopic;
+  $("#feed").innerHTML = ps.slice(0, feedN).map(p => postHTML(p)).join("") || `<p class="muted">No posts match.</p>`;
+  $("#feedMore").hidden = ps.length <= feedN;
+  wireCveChips($("#feed"));
+}
+$("#postQ").addEventListener("input", () => { feedN = 25; renderFeed(); });
+$("#clearTopic").onclick = () => { selTopic = null; renderLatest(); };
+$("#feedMore").onclick = () => { feedN += 25; renderFeed(); };
+function wireCveChips(root){ root.querySelectorAll("[data-cve]").forEach(b => b.onclick = () => { openCve(b.dataset.cve); location.hash = "cves"; }); }
+
+/* ---------- TOPICS ---------- */
+let smooth = false, ownScale = false;
+const roll = arr => arr.map((_, i) => { const s = arr.slice(Math.max(0, i - 6), i + 1); return s.reduce((a, b) => a + b, 0) / s.length; });
+function areaChart({series, days, labelledTo, w, h, max, pad = {l:30,r:8,t:8,b:20}, tipFn, onClick, ticks = true, showLabelled = true}){
+  const iw = w - pad.l - pad.r, ih = h - pad.t - pad.b, n = days.length;
+  const x = i => pad.l + (n === 1 ? iw/2 : i * iw / (n - 1)), y = v => pad.t + ih - (v / (max || 1)) * ih;
+  const li = days.indexOf(labelledTo);
+  const pts = series.slice(0, li + 1);
+  const line = pts.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join("");
+  const area = pts.length ? `${line}L${x(pts.length-1).toFixed(1)},${y(0)}L${x(0).toFixed(1)},${y(0)}Z` : "";
+  const nice = niceTicks(max);
+  let g = "";
+  if (ticks) g += `<g class="grid">${nice.map(t => `<line x1="${pad.l}" x2="${w-pad.r}" y1="${y(t)}" y2="${y(t)}"/>`).join("")}</g>` + nice.map(t => `<text x="${pad.l-5}" y="${y(t)+3.5}" text-anchor="end">${t}</text>`).join("");
+  if (li < n - 1) { const hx = x(li) + (x(1)-x(0))/2; g += `<rect x="${hx}" y="${pad.t}" width="${w-pad.r-hx}" height="${ih}" fill="url(#hatch)"/>` + (showLabelled ? `<text x="${(hx + w - pad.r)/2}" y="${pad.t+12}" text-anchor="middle">not yet labelled</text>` : ""); }
+  const xt = [0, Math.round((n-1)/3), Math.round(2*(n-1)/3), n-1];
+  g += xt.map(i => `<text x="${x(i)}" y="${h-5}" text-anchor="${i===0?"start":i===n-1?"end":"middle"}">${dlab(days[i])}</text>`).join("");
+  g += `<path d="${area}" fill="var(--accent)" fill-opacity=".16"/><path d="${line}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>`;
+  if (pts.length) g += `<circle cx="${x(pts.length-1)}" cy="${y(pts[pts.length-1])}" r="3.5" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/>`;
+  g += `<line class="xh" x1="0" x2="0" y1="${pad.t}" y2="${pad.t+ih}" stroke="var(--ink-2)" stroke-width="1" opacity="0"/><circle class="xd" r="4" fill="var(--accent)" stroke="var(--surface)" stroke-width="2" opacity="0"/>`;
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", `0 0 ${w} ${h}`); svg.setAttribute("width", "100%"); svg.style.display = "block"; svg.style.maxWidth = "100%";
+  svg.innerHTML = `<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="var(--surface)"/><line x1="0" y1="0" x2="0" y2="6" stroke="var(--hatch)" stroke-width="2"/></pattern></defs>${g}<rect x="${pad.l}" y="0" width="${iw}" height="${h}" fill="transparent" class="hit"/>`;
+  const hit = svg.querySelector(".hit"), xh = svg.querySelector(".xh"), xd = svg.querySelector(".xd");
+  hit.addEventListener("mousemove", e => { const r = svg.getBoundingClientRect(); const sx = (e.clientX - r.left) * w / r.width;
+    const i = Math.max(0, Math.min(n - 1, Math.round((sx - pad.l) / iw * (n - 1))));
+    xh.setAttribute("x1", x(i)); xh.setAttribute("x2", x(i)); xh.setAttribute("opacity", ".35");
+    if (i <= li) { xd.setAttribute("cx", x(i)); xd.setAttribute("cy", y(series[i])); xd.setAttribute("opacity", "1"); } else xd.setAttribute("opacity", "0");
+    showTip(e, tipFn(i)); });
+  hit.addEventListener("mouseleave", () => { xh.setAttribute("opacity", "0"); xd.setAttribute("opacity", "0"); hideTip(); });
+  if (onClick) svg.addEventListener("click", onClick);
+  return svg;
+}
+function niceTicks(max){ if (!max) return [0]; const raw = max / 3, p = Math.pow(10, Math.floor(Math.log10(raw))); const step = [1,2,5,10].map(k => k*p).find(s => s >= raw); const out = []; for (let t = 0; t <= max + 1e-9; t += step) out.push(+t.toFixed(2)); return out; }
+function drawTopics(){
+  const tot = DAYS.map(d => D.daily.filter(r => r.day === d).reduce((s, r) => s + r.relevant, 0));
+  const totS = smooth ? roll(tot) : tot;
+  const el = $("#totalChart"); el.innerHTML = "";
+  const w = Math.max(320, el.clientWidth || 900);
+  el.append(areaChart({series: totS, days: DAYS, labelledTo: D.meta.labelled_through, w, h: 210, max: Math.max(...totS.slice(0, LABDAYS.length)) * 1.1,
+    tipFn: i => `${dlab(DAYS[i])}<br>${DAYS[i] > D.meta.labelled_through ? "not yet labelled" : `${smooth ? "7-day mean " + totS[i].toFixed(1) : fmt(tot[i]) + " relevant posts"}`}`}));
+  const g = $("#smGrid"); g.innerHTML = "";
+  const order = topicStats.map(x => x.t);
+  const ser = {}; order.forEach(t => { const s = DAYS.map(d => topicDaily[t]?.[d]?.posts || 0); ser[t] = smooth ? roll(s) : s; });
+  const shared = Math.max(...order.map(t => Math.max(...ser[t].slice(0, LABDAYS.length))));
+  order.forEach(t => {
+    const st = topicStats.find(x => x.t === t);
+    const box = document.createElement("div"); box.className = "sm"; box.tabIndex = 0;
+    box.innerHTML = `<div class="h"><b>${esc(tname(t))}</b><span>${fmt(st.cur)} in last 14 d</span></div>`;
+    const mx = ownScale ? Math.max(...ser[t].slice(0, LABDAYS.length)) : shared;
+    const go = () => { selTopic = t; feedN = 25; renderLatest(); location.hash = "latest"; };
+    box.append(areaChart({series: ser[t], days: DAYS, labelledTo: D.meta.labelled_through, w: 300, h: 92, max: mx * 1.08, pad: {l:26,r:6,t:6,b:18}, showLabelled: false,
+      tipFn: i => { const r = topicDaily[t]?.[DAYS[i]]; return `${esc(tname(t))} · ${dlab(DAYS[i])}<br>` + (DAYS[i] > D.meta.labelled_through ? "not yet labelled" : smooth ? `7-day mean ${ser[t][i].toFixed(1)}` : `${r?.posts || 0} posts, ${r?.authors || 0} authors`); },
+      onClick: go}));
+    box.onkeydown = e => { if (e.key === "Enter") go(); };
+    g.append(box);
+  });
+  // raw collection by source (small multiples, one scale each is fine as separate charts)
+  const raw = $("#rawChart"); raw.innerHTML = "";
+  const srcs = [...new Set(D.daily.map(r => r.source))];
+  const all = DAYS.map(d => D.daily.filter(r => r.day === d).reduce((s, r) => s + r.posts, 0));
+  raw.append(areaChart({series: all, days: DAYS, labelledTo: D.meta.collected_through, w: Math.max(320, raw.clientWidth || 900), h: 150, max: Math.max(...all) * 1.1,
+    tipFn: i => `${dlab(DAYS[i])}<br>` + srcs.map(s => `${sname(s)}: ${fmt(D.daily.find(r => r.day === DAYS[i] && r.source === s)?.posts || 0)}`).join("<br>")}));
+  $("#rawLegend").innerHTML = srcs.map(s => `<span>${esc(sname(s))} <b class="num">${fmt(D.daily.filter(r => r.source === s).reduce((a, r) => a + r.posts, 0))}</b></span>`).join("");
+}
+const seg = (a, b, fn) => { a.onclick = () => { a.setAttribute("aria-pressed","true"); b.setAttribute("aria-pressed","false"); fn(true); }; b.onclick = () => { b.setAttribute("aria-pressed","true"); a.setAttribute("aria-pressed","false"); fn(false); }; };
+seg($("#smRaw"), $("#sm7"), v => { smooth = !v; drawTopics(); });
+seg($("#scShared"), $("#scOwn"), v => { ownScale = !v; drawTopics(); });
+let rT; addEventListener("resize", () => { clearTimeout(rT); rT = setTimeout(() => { if (!$("#v-topics").hidden) drawTopics(); }, 150); });
+
+/* ---------- CVES ---------- */
+let selCve = null;
+const sevChip = c => c.cvss_score != null ? `<span class="chip sev-${esc(c.cvss_severity || "NONE")}">${Number(c.cvss_score).toFixed(1)} ${esc((c.cvss_severity||"").toLowerCase())}</span>` : (c.enrichment === "nvd" ? `<span class="chip" title="NVD has published the record but not scored it yet">NVD unscored</span>` : `<span class="chip" title="Not fetched from NVD in this snapshot">not fetched</span>`);
+const kevChip = c => c.kev ? `<span class="chip kev" title="In CISA Known Exploited Vulnerabilities${c.kev_date_added ? ", added " + c.kev_date_added : ""}">KEV</span>` : "";
+function spark(vals){ const w = 84, h = 22, mx = Math.max(1, ...vals); const x = i => 1 + i * (w - 2) / (vals.length - 1), y = v => h - 2 - v / mx * (h - 5);
+  const d = vals.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join("");
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true"><path d="${d}L${x(vals.length-1)},${h-2}L1,${h-2}Z" fill="var(--accent)" fill-opacity=".15"/><path d="${d}" fill="none" stroke="var(--accent)" stroke-width="1.5"/><circle cx="${x(vals.length-1)}" cy="${y(vals[vals.length-1])}" r="2.5" fill="var(--accent)"/></svg>`; }
+function renderCves(){
+  const t = D.cve_totals, top = D.cves;
+  $("#cveKpis").innerHTML = [
+    [fmt(t.cves), "distinct CVEs mentioned", `${dlab(CW[0])} – ${dlab(CW[1])}`],
+    [fmt(t.kev), "of them in CISA KEV", "exploitation observed"],
+    [fmt(t.posts), "posts naming a CVE", "all sources, before relevance gate"],
+    [fmt(top.filter(c => c.mentions.some(m => m.canada)).length), "top CVEs with a Canada-relevant post", `of the ${top.length} most discussed`],
+  ].map(([v,l,d]) => `<div class="kpi"><span class="v">${v}</span><span class="l">${l}</span><span class="d">${d}</span></div>`).join("");
+  $("#cveWinLbl").textContent = `${dlab(CW[0])} – ${dlab(CW[1])} · top ${top.length}`;
+  drawCveTable();
+  openCve(top[0]?.cve_id, true);
+}
+function drawCveTable(){
+  const q = $("#cveQ").value.trim().toLowerCase(), ko = $("#kevOnly").checked;
+  const rows = D.cves.filter(c => (!ko || c.kev) && (!q || (c.cve_id + " " + (c.description || "")).toLowerCase().includes(q))).slice(0, 80);
+  $("#cveTable").innerHTML = `<thead><tr><th>CVE</th><th class="r">Posts</th><th>14 days</th><th class="r">Prior</th><th>CVSS</th><th></th></tr></thead><tbody>` +
+    rows.map(c => `<tr class="click${selCve===c.cve_id?" sel":""}" data-id="${esc(c.cve_id)}" tabindex="0"><td class="mono" style="white-space:nowrap">${esc(c.cve_id)}</td><td class="r num">${fmt(c.posts)}</td><td>${spark(c.daily)}</td><td class="r num muted">${fmt(c.prev_posts)}</td><td>${sevChip(c)}</td><td>${kevChip(c)}</td></tr>`).join("") + "</tbody>";
+  document.querySelectorAll("#cveTable tr.click").forEach(tr => { tr.onclick = () => openCve(tr.dataset.id); tr.onkeydown = e => { if (e.key === "Enter") openCve(tr.dataset.id); }; });
+}
+$("#cveQ").addEventListener("input", drawCveTable); $("#kevOnly").addEventListener("change", drawCveTable);
+const osint = id => { const n = id.replace(/^CVE-/i, ""); return [
+  ["NVD", `https://nvd.nist.gov/vuln/detail/${id}`], ["CVE.org", `https://www.cve.org/CVERecord?id=${id}`],
+  ["CISA KEV", `https://www.cisa.gov/known-exploited-vulnerabilities-catalog?search_api_fulltext=${id}`],
+  ["EPSS", `https://api.first.org/data/v1/epss?cve=${id}`], ["OSV", `https://osv.dev/vulnerability/${id}`],
+  ["GitHub advisories", `https://github.com/advisories?query=${id}`], ["Exploit-DB", `https://www.exploit-db.com/search?cve=${n}`]]; };
+function openCve(id, quiet){
+  if (!id) return; selCve = id;
+  const c = D.cves.find(x => x.cve_id === id);
+  const rel = D.posts.filter(p => p.cves.includes(id));
+  const el = $("#cveDetail");
+  el.innerHTML = `<div style="display:grid;gap:12px">
+    <div><span class="eyebrow">CVE record</span><h2 class="mono" style="font-family:var(--f-mono);font-size:1.3rem;font-weight:500;margin-top:4px">${esc(id)}</h2></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">${c ? sevChip(c) + kevChip(c) : ""}</div>
+    ${c ? `<dl class="kv"><dt>Posts, last 14 d</dt><dd class="num">${fmt(c.posts)} from ${c.sources} source${c.sources>1?"s":""}</dd><dt>Prior 14 d</dt><dd class="num">${fmt(c.prev_posts)}</dd><dt>Last seen</dt><dd>${dlab(c.last_seen)}</dd>${c.kev_date_added?`<dt>Added to KEV</dt><dd>${esc(c.kev_date_added)}</dd>`:""}${c.nvd_published?`<dt>Published</dt><dd>${esc(c.nvd_published.slice(0,10))}</dd>`:""}</dl>
+      <p style="margin:0;font-size:.88rem">${c.description ? esc(c.description) : `<span class="muted">No NVD description in this snapshot yet. Open NVD for the record.</span>`}</p>` : `<p class="muted small" style="margin:0">Outside the top ${D.cves.length} for the last 14 days.</p>`}
+    <div><div class="eyebrow" style="margin-bottom:6px">Open-source intelligence</div><div class="links">${osint(id).map(([n,u]) => `<a href="${esc(u)}" target="_blank" rel="noopener">${n} ↗</a>`).join("")}</div></div>
+    <div><div class="eyebrow">Recent mentions</div><div class="feed">${(c?.mentions || []).map(m => postHTML({...m, cves: []}, {noTags: true}) + (m.canada ? "" : "")).join("") || (rel.length ? "" : `<p class="muted small">No mentions in the window.</p>`)}</div></div>
+    ${rel.length ? `<div><div class="eyebrow">Canada-relevant posts naming it · ${rel.length}</div><div class="feed">${rel.slice(0,4).map(p => postHTML(p, {noTags: true})).join("")}</div></div>` : ""}
+  </div>`;
+  document.querySelectorAll("#cveTable tr.click").forEach(tr => tr.classList.toggle("sel", tr.dataset.id === id));
+  if (!quiet && innerWidth < 900) el.scrollIntoView({behavior: "smooth", block: "start"});
+}
+
+/* ---------- RANSOMWARE ---------- */
+let rwMatchedOnly = true;
+function renderRansomware(){
+  const ev = D.ransomware_events, m = ev.filter(e => e.posts.length);
+  $("#rwSub").textContent = `${ev.length} Canadian victims listed on leak sites; ${m.length} were named in at least one collected post.`;
+  const list = rwMatchedOnly ? m : ev;
+  $("#rwList").innerHTML = list.map(e => `<details class="ev"${e.posts.length ? "" : " "}><summary><span class="num muted">${esc(e.ts.slice(0,10))}</span><span class="v">${esc(e.victim)}</span><span class="chip">${esc(e.grp)}</span>${e.domain?`<span class="mono small muted">${esc(e.domain)}</span>`:""}<span class="${e.posts.length?"chip ok":"chip"}">${e.posts.length} post${e.posts.length===1?"":"s"}</span><a class="small" href="https://www.ransomware.live/group/${encodeURIComponent(e.grp.toLowerCase())}" target="_blank" rel="noopener">group profile ↗</a></summary>
+    ${e.posts.length ? `<div class="posts feed">${e.posts.slice().sort((a,b)=>a.ts<b.ts?-1:1).map(p => postHTML({...p, cves: []}, {noTags: true}).replace('<div class="meta">', `<div class="meta"><span class="chip">matched on ${esc(p.matched_on)}</span>`)).join("")}</div>` : `<p class="small muted">No post named this victim.</p>`}</details>`).join("");
+}
+seg($("#rwMatched"), $("#rwAll"), v => { rwMatchedOnly = v; renderRansomware(); });
+
+/* ---------- SOURCES ---------- */
+function renderSources(){
+  $("#srcVer").textContent = D.meta.sources_version;
+  $("#srcTable").innerHTML = `<thead><tr><th>Source</th><th>Type</th><th>Endpoint</th><th class="r">Posts</th><th class="r">Relevant</th><th>Last run</th><th>Allowed because</th></tr></thead><tbody>` +
+    D.sources.map(s => { const lr = s.last_run; const st = lr ? (lr.status === "success" ? "ok" : lr.status === "partial" ? "warn" : "bad") : "";
+      return `<tr><td><b style="font-weight:600">${esc(sname(s.key))}</b>${s.enabled?"":' <span class="chip">off</span>'}</td><td class="mono small">${esc(s.kind)}</td><td class="small" style="max-width:240px;overflow-wrap:anywhere">${s.endpoint?`<a href="${esc(s.endpoint)}" target="_blank" rel="noopener">${esc(s.endpoint.replace(/^https?:\/\//,""))}</a>`:'<span class="muted">search API</span>'}</td><td class="r num">${fmt(s.stats?.posts)}</td><td class="r num">${fmt(s.stats?.relevant)}</td><td>${lr?`<span class="chip ${st}">${esc(lr.status)}</span> <span class="small muted">${esc((lr.ended_at||"").slice(0,16).replace("T"," "))}</span>`:"–"}</td><td class="small muted" style="max-width:220px">${esc(s.authorised)}</td></tr>`; }).join("") + "</tbody>";
+  const days = dayRange(D.meta.cve_prev_window[0], D.meta.collected_through);
+  const srcs = [...new Set(D.runs.map(r => r.source))];
+  $("#health").innerHTML = srcs.map(s => { const cells = days.map(d => { const rs = D.runs.filter(r => r.source === s && r.day === d);
+      if (!rs.length) return `<i title="${d}: no run"></i>`;
+      const ok = rs.filter(r => r.status === "success").reduce((a, r) => a + r.runs, 0), all = rs.reduce((a, r) => a + r.runs, 0), ins = rs.reduce((a, r) => a + r.inserted, 0);
+      return `<i class="${ok===all?"s":ok?"p":"f"}" title="${d}: ${all} runs, ${ok} succeeded, ${ins} new posts"></i>`; }).join("");
+    return `<div style="display:grid;grid-template-columns:130px 1fr;gap:10px;align-items:center"><span class="small" style="font-weight:600">${esc(sname(s))}</span><div class="strip">${cells}</div></div>`; }).join("") +
+    `<div style="display:grid;grid-template-columns:130px 1fr;gap:10px"><span></span><div class="small muted mono" style="display:flex;justify-content:space-between"><span>${dlab(days[0])}</span><span>${dlab(days[days.length-1])}</span></div></div>`;
+  setupSourceForm();
+}
+const slug = s => (s || "").toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "").slice(0, 40) || "new_source";
+function yamlFor(){ const n = $("#sf-name").value, k = $("#sf-kind").value, u = $("#sf-url").value, a = $("#sf-auth").value;
+  const q = s => `"${String(s).replace(/\\/g,"\\\\").replace(/"/g,'\\"')}"`;
+  return `- key: ${slug(n)}\n  kind: ${k === "other" ? "rss   # needs a new collector" : k}\n  enabled: true\n  ${k === "discourse" ? "base_url" : "url"}: ${u || "https://…"}\n  authorised: ${a ? q(a) : '"<why automated access is allowed>"'}\n  rate_limit_s: 3.0`; }
+function setupSourceForm(){
+  const upd = () => { $("#yaml").textContent = yamlFor(); };
+  ["#sf-name","#sf-kind","#sf-url","#sf-auth"].forEach(s => $(s).addEventListener("input", upd)); upd();
+  $("#copyYaml").onclick = async () => { try { await navigator.clipboard.writeText(yamlFor()); $("#copyYaml").textContent = "copied"; } catch { const r = document.createRange(); r.selectNodeContents($("#yaml")); getSelection().removeAllRanges(); getSelection().addRange(r); $("#copyYaml").textContent = "selected, press ⌘C"; } setTimeout(() => $("#copyYaml").textContent = "copy", 1800); };
+  let db = null;
+  const status = $("#sf-status");
+  $("#srcForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const name = $("#sf-name").value.trim(), url = $("#sf-url").value.trim(), auth = $("#sf-auth").value.trim();
+    if (!name || !/^https?:\/\/\S+\.\S+/.test(url)) { status.textContent = "Add a name and a full address starting with https://."; return; }
+    if (auth.length < 12) { status.textContent = "Say why automated access is allowed (terms of service, public feed, API policy). The crawler will not add a source without it."; return; }
+    if (!db) { status.textContent = "The queue is only available when this page is opened in Claude. Copy the config entry instead."; return; }
+    $("#sf-submit").disabled = true; status.textContent = "Saving…";
+    try {
+      await db.collection("source_requests").add({name, kind: $("#sf-kind").value, url, authorised: auth, notes: $("#sf-notes").value.trim(), key: slug(name), status: "pending", created_at: new Date().toISOString()});
+      status.textContent = "Queued. It will be reviewed before the next crawl."; $("#srcForm").reset(); upd();
+    } catch (err) {
+      status.textContent = err?.code === "invalid_argument" ? "Your access level cannot add to the queue. Ask the owner for Contributor access, or copy the config entry." : err?.code === "quota_exceeded" ? "The queue is full. Ask the owner to clear processed requests." : "Could not save right now. Try again in a moment.";
+    } finally { $("#sf-submit").disabled = false; }
+  });
+  (async () => {
+    db = window.claude ? await window.claude.use("db").catch(() => null) : null;
+    if (!db) { $("#queue").textContent = "The shared crawl queue loads when this page is opened in Claude."; return; }
+    db.collection("source_requests").orderBy("created_at", "desc").limit(50).onSnapshot(snap => {
+      if (snap.empty) { $("#queue").innerHTML = "No forums queued yet."; return; }
+      $("#queue").innerHTML = `<div class="tscroll"><table><thead><tr><th>Forum</th><th>Type</th><th>Status</th><th>Queued</th></tr></thead><tbody>${snap.docs.map(d => { const r = d.data();
+        const st = r.status === "added" ? "ok" : r.status === "rejected" ? "bad" : "warn";
+        return `<tr><td><b style="font-weight:600">${esc(r.name)}</b><br><span class="small muted" style="overflow-wrap:anywhere">${esc(r.url)}</span>${r.review_note?`<br><span class="small">${esc(r.review_note)}</span>`:""}</td><td class="mono small">${esc(r.kind)}</td><td><span class="chip ${st}">${esc(r.status)}</span></td><td class="small muted">${esc(String(r.created_at||"").slice(0,10))}</td></tr>`; }).join("")}</tbody></table></div>`;
+    }, () => { $("#queue").textContent = "The crawl queue is unavailable in this view."; });
+  })();
+}
+
+/* ---------- ASK ---------- */
+function setupAsk(){
+  const SUG = ["What were the main Canadian cyber topics in the last 14 days, and how many authors drove each?",
+    "Which CVEs being discussed are in CISA KEV and also appear in Canada-relevant posts?",
+    "Is the ransomware volume broad discussion or a few feed accounts?",
+    "Which Canadian ransomware victims got the most discussion, and from whom?"];
+  $("#sugg").innerHTML = SUG.map(s => `<button type="button">${esc(s)}</button>`).join("");
+  document.querySelectorAll("#sugg button").forEach(b => b.onclick = () => { $("#askBox").value = b.textContent; ask(); });
+  const m = D.meta;
+  const RULES = `You are the analyst for ccint Signal Desk, a monitor of Canada-related cybersecurity discussion. Answer only from this snapshot, using the tools to look things up. Rules:
+1. Every factual claim names its window (dates), the counts, and the source(s). Snapshot: collected ${m.first_day} to ${m.collected_through}; relevance/topic labels (gate ${m.gate_version}, topics ${m.topic_version}) cover through ${m.labelled_through}. Topic window ${W[0]}..${W[1]} vs prior ${PW[0]}..${PW[1]}. CVE window ${CW[0]}..${CW[1]}.
+2. Volume is not attention: many posts can come from a few automated feed accounts. Check author counts and feed share before calling something widely discussed.
+3. The corpus is Bluesky plus a few RSS feeds. It is not Canadian public opinion.
+4. Changes between windows are descriptive. A permutation test found no topic change distinguishable from noise, so never call a change a trend or significant.
+5. CVSS (theoretical severity) and CISA KEV (observed exploitation) are separate signals; never merge them.
+6. Posts collected after ${m.labelled_through} are unlabelled, not irrelevant.
+7. Ransomware victim matches are name/domain string matches and can be wrong for common names.
+Answer in the language the user writes in. Be concise: short paragraphs or bullets, cite CVE ids and post handles where useful.`;
+  const pick = (p, n = 300) => ({ts: p.ts.slice(0,16), src: p.src, handle: p.handle, topic: p.topic, actor: p.actor, cves: p.cves, text: (p.text || "").slice(0, n), url: p.url});
+  const TOOLS = [
+    {name: "overview", description: "Snapshot metadata plus topic ranking for the latest 14 labelled days: posts, prior-window posts, distinct authors, fraction of posts from incident-feed accounts, top author.",
+      execute: () => ({meta: m, topics: topicStats.map(x => ({topic: x.t, posts: x.cur, prior_posts: x.prev, authors: x.authors, feed_share: +x.feed.toFixed(2), top_author: x.top}))})},
+    {name: "search_posts", description: "Search Canada-relevant posts. Returns up to `limit` (max 20) newest matches with text, handle, topic, CVEs, author type. Filters are optional.",
+      inputSchema: {type: "object", properties: {query: {type: "string", description: "substring to match in text or handle"}, topic: {type: "string", enum: Object.keys(TNAME)}, from: {type: "string", description: "YYYY-MM-DD"}, to: {type: "string"}, limit: {type: "number"}}},
+      execute: i => { const q = String(i.query || "").toLowerCase(); const lim = Math.min(20, Number(i.limit) || 10);
+        const r = D.posts.filter(p => (!i.topic || p.topic === i.topic) && (!i.from || p.ts >= i.from) && (!i.to || p.ts.slice(0,10) <= i.to) && (!q || (p.text + " " + p.handle).toLowerCase().includes(q)));
+        return {matches: r.length, posts: r.slice(0, lim).map(p => pick(p, 260))}; }},
+    {name: "topic_timeseries", description: "Daily relevant-post and author counts for one topic across the whole labelled range.",
+      inputSchema: {type: "object", properties: {topic: {type: "string", enum: Object.keys(TNAME)}}, required: ["topic"]},
+      execute: i => ({topic: i.topic, days: LABDAYS.map(d => [d, topicDaily[i.topic]?.[d]?.posts || 0, topicDaily[i.topic]?.[d]?.authors || 0]), columns: ["day","posts","authors"], top_authors_in_window: D.topic_concentration[i.topic] || []})},
+    {name: "top_cves", description: "Most-mentioned CVEs in the CVE window with post counts, prior-window counts, CVSS, KEV flag and whether any Canada-relevant post names them.",
+      inputSchema: {type: "object", properties: {kev_only: {type: "boolean"}, limit: {type: "number"}}},
+      execute: i => D.cves.filter(c => !i.kev_only || c.kev).slice(0, Math.min(40, Number(i.limit) || 15)).map(c => ({cve: c.cve_id, posts: c.posts, prior: c.prev_posts, cvss: c.cvss_score, severity: c.cvss_severity, kev: c.kev, kev_added: c.kev_date_added, canada_mention: c.mentions.some(x => x.canada)}))},
+    {name: "cve_detail", description: "Full record for one CVE id: description, CVSS, KEV, daily mentions over the CVE window, sample posts.",
+      inputSchema: {type: "object", properties: {cve_id: {type: "string"}}, required: ["cve_id"]},
+      execute: i => { const id = String(i.cve_id).toUpperCase(); const c = D.cves.find(x => x.cve_id === id);
+        const rel = D.posts.filter(p => p.cves.includes(id)).slice(0, 5).map(p => pick(p, 220));
+        if (!c && !rel.length) throw new Error(id + " is not in this snapshot's top CVEs or relevant posts");
+        return c ? {...c, mentions: c.mentions.map(p => pick(p, 200)), canada_relevant_posts: rel} : {cve: id, canada_relevant_posts: rel}; }},
+    {name: "ransomware_matches", description: "Canadian ransomware.live victims with the collected posts that name them (string match, may be wrong for common names).",
+      inputSchema: {type: "object", properties: {matched_only: {type: "boolean"}}},
+      execute: i => D.ransomware_events.filter(e => !i.matched_only || e.posts.length).slice(0, 40).map(e => ({date: e.ts.slice(0,10), victim: e.victim, group: e.grp, domain: e.domain, posts: e.posts.slice(0, 4).map(p => pick(p, 160)), n_posts: e.posts.length}))},
+  ];
+  const turns = []; let sample = null, canTools = false, ctl = null;
+  const box = $("#askBox"), btn = $("#askBtn"), stop = $("#stopBtn"), note = $("#askNote"), msgs = $("#msgs");
+  (async () => { sample = window.claude ? await window.claude.use("sample").catch(() => null) : null;
+    if (!sample) { note.textContent = "The analyst works when this page is opened in Claude."; btn.disabled = true; return; }
+    const lim = await sample.limits().catch(() => null); canTools = !!lim?.tools; })();
+  const md = s => { const lines = esc(s).split("\n"); let out = "", inList = false;
+    for (const l of lines) { const li = l.match(/^\s*[-*•]\s+(.*)/); const t = (x) => x.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/`([^`]+)`/g, "<code>$1</code>").replace(/^#{1,4}\s*(.*)/, "<b>$1</b>");
+      if (li) { if (!inList) { out += "<ul>"; inList = true; } out += `<li>${t(li[1])}</li>`; } else { if (inList) { out += "</ul>"; inList = false; } if (l.trim()) out += `<p>${t(l)}</p>`; } }
+    return out + (inList ? "</ul>" : ""); };
+  const add = (cls, html) => { const d = document.createElement("div"); d.className = "msg " + cls; d.innerHTML = html; msgs.append(d); return d; };
+  const ERR = {not_granted: "Claude access was not allowed for this page.", sampling_disabled: "Claude is not available for this account.", rate_limited: "Too many questions at once. Wait a minute and ask again.", session_expired: "Sign in to Claude again, then ask.", refused: "Claude declined that question. Try rephrasing it.", prompt_too_large: "The conversation got too long. Reload the page to start a fresh one.", empty_completion: "No answer came back. Try a narrower question."};
+  async function ask(){
+    const q = box.value.trim(); if (!q || !sample || ctl) return;
+    box.value = ""; add("u", esc(q)); turns.push({role: "user", content: q});
+    const a = add("a", `<span class="muted">Thinking…</span>`); const tn = document.createElement("div"); tn.className = "toolnote";
+    ctl = new AbortController(); btn.hidden = true; stop.hidden = false;
+    const used = [];
+    const tools = canTools ? TOOLS.map(t => ({...t, execute: (inp, ctx) => { used.push(t.name); tn.textContent = "looked up: " + used.join(", "); return t.execute(inp || {}, ctx); }})) : undefined;
+    const ctx = canTools ? "" : `\n\nSnapshot data:\n${JSON.stringify(TOOLS[0].execute()).slice(0, 12000)}\nTop CVEs: ${JSON.stringify(TOOLS[3].execute({limit: 20}))}`;
+    const hist = turns.slice(-8);
+    try {
+      const {text, truncated} = await sample([{role: "user", content: RULES + ctx}, ...hist],
+        Object.assign({signal: ctl.signal, onText: ({text}) => { a.innerHTML = md(text); a.append(tn); }}, canTools ? {tools} : {cache: false}));
+      a.innerHTML = md(text); a.append(tn); if (truncated) a.insertAdjacentHTML("beforeend", `<p class="small muted">Cut short. Ask a narrower follow-up.</p>`);
+      turns.push({role: "assistant", content: text});
+    } catch (e) {
+      if (e?.text) { a.innerHTML = md(e.text); } else a.innerHTML = "";
+      if (e?.code !== "cancelled") a.insertAdjacentHTML("beforeend", `<p class="small muted">${esc(ERR[e?.code] || "The answer was interrupted. Ask again.")}</p>`);
+      else if (!e?.text) a.innerHTML = `<p class="small muted">Stopped.</p>`;
+      turns.pop();
+      if (["not_granted","sampling_disabled","not_declared","capability_disabled"].includes(e?.code)) btn.disabled = true;
+    } finally { ctl = null; btn.hidden = false; stop.hidden = true; }
+  }
+  btn.onclick = ask; stop.onclick = () => ctl?.abort();
+  box.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); ask(); } });
+  box.addEventListener("input", () => { box.style.height = "auto"; box.style.height = Math.min(160, box.scrollHeight) + "px"; });
+}
+route();
+})();
+</script>
